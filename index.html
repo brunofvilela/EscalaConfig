@@ -62,7 +62,7 @@
 
 <script>
 /* ============================================================
-   CONFIGURAÇÃO DO FIREBASE — AGORA 100% CORRETA
+   CONFIGURAÇÃO DO FIREBASE — SOMENTE UMA VEZ!
    ============================================================ */
 const firebaseConfig = {
     apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
@@ -74,12 +74,14 @@ const firebaseConfig = {
     measurementId: "G-160CC381TP"
 };
 
-// Inicializa
+// Inicializa Firebase UMA vez
 firebase.initializeApp(firebaseConfig);
+
+// Inicializa Firestore UMA vez
 const db = firebase.firestore();
 
 /* ============================================================
-   FUNÇÃO: SALVAR TÉCNICO NO FIRESTORE
+   BOTÃO – SALVAR NO FIRESTORE
    ============================================================ */
 document.getElementById("btnSalvar").addEventListener("click", async () => {
     
