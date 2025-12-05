@@ -1,3 +1,4 @@
+document.addEventListener("DOMContentLoaded", () => {
 console.log("App carregado");
 
 // Status
@@ -49,3 +50,4 @@ document.getElementById('btnAusencia').onclick = async ()=>{
 };
 
 carregarTudo();
+});
