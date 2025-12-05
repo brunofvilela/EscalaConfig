@@ -1,369 +1,116 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Painel de Escala - Independente</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Escala</title>
 
-<!-- Estilos simples -->
-<style>
-  body{font-family:Inter, Roboto, Arial; padding:18px; max-width:980px; margin:0 auto; background:#f7f9fb; color:#111}
-  header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
-  h1{font-size:20px; margin:0}
-  .card{background:#fff; padding:12px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.03); margin-bottom:12px}
-  .controls{display:flex; gap:8px; flex-wrap:wrap}
-  button{padding:8px 12px; border-radius:8px; border:0; cursor:pointer}
-  .primary{background:#1a73e8;color:#fff}
-  .danger{background:#ef5350;color:#fff}
-  .muted{color:#666; font-size:13px}
-  label{display:block; font-weight:600; margin-top:8px; margin-bottom:6px}
-  input, select, textarea{width:100%; padding:8px; border-radius:8px; border:1px solid #e0e0e0; box-sizing:border-box}
-  table{width:100%; border-collapse:collapse; margin-top:8px}
-  th,td{padding:8px; border-bottom:1px solid #f1f1f1; text-align:left; font-size:13px}
-  small.note{color:#666}
-</style>
+    <!-- Firebase compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
-<!-- Firebase (compat, via CDN) - simples para copy/paste -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+            width: 100%;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+        }
+    </style>
 </head>
+
 <body>
+<div class="container">
 
-<header>
-  <h1>Painel de Escala (autônomo)</h1>
-  <div class="muted">Compartilhe a URL — dados em Firestore</div>
-</header>
+    <h2>Cadastro de Técnicos</h2>
 
-<div class="card">
-  <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
-    <div>
-      <button class="primary" id="btnIncluir">Incluir Tarefa (próximo)</button>
-      <button id="btnRefresh">Atualizar</button>
-    </div>
-    <div class="muted" id="statusApp">Carregando...</div>
-  </div>
+    <label>Nome do técnico:</label>
+    <input type="text" id="techName">
 
-  <label>Atividade (texto que será salvo no histórico)</label>
-  <textarea id="atividade" placeholder="Descreva a atividade..."></textarea>
-  <div style="margin-top:8px" class="muted">Obs: A rotação considera apenas técnicos com status <strong>ATIVO</strong>.</div>
-</div>
+    <label>Ordem:</label>
+    <input type="number" id="techOrder">
 
-<div class="card">
-  <h3>Lista de Técnicos</h3>
-  <div id="listaTecnicos" class="muted">Carregando...</div>
-  <small class="note">Você pode editar/ordenar técnicos no painel abaixo.</small>
-</div>
+    <label>Status:</label>
+    <select id="techStatus">
+        <option value="ativo">Ativo</option>
+        <option value="inativo">Inativo</option>
+    </select>
 
-<div class="card">
-  <h3>Marcar Ausência</h3>
-  <label>Técnico</label>
-  <select id="selTec"></select>
-  <label>Data início</label>
-  <input type="date" id="startDate" />
-  <label>Data fim</label>
-  <input type="date" id="endDate" />
-  <label>Motivo</label>
-  <input type="text" id="motivo"/>
-  <div style="margin-top:8px">
-    <button class="danger" id="btnAusencia">Registrar Ausência</button>
-  </div>
-  <div id="resAusencia" class="muted"></div>
-</div>
+    <button id="btnSalvar">Salvar Técnico</button>
 
-<div class="card">
-  <h3>Últimas Tarefas</h3>
-  <div id="ultimasTarefas" class="muted">Carregando...</div>
-</div>
-
-<div class="card">
-  <h3>Admin: Importar técnicos de exemplo / Inicializar</h3>
-  <div class="controls">
-    <button id="btnInit">Criar dados de exemplo</button>
-    <button id="btnClear">Limpar tudo (cuidado)</button>
-    <button id="btnFixStatus">Recalcular status (baseado em ausências)</button>
-  </div>
-  <div id="adminRes" class="muted"></div>
 </div>
 
 <script>
-
-/* CONFIG FIREBASE */
+/* ============================================================
+   CONFIGURAÇÃO DO FIREBASE — AGORA 100% CORRETA
+   ============================================================ */
 const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "...",
-  measurementId: "..."
+    apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
+    authDomain: "escalaconfig.firebaseapp.com",
+    projectId: "escalaconfig",
+    storageBucket: "escalaconfig.firebasestorage.app",
+    messagingSenderId: "393446307606",
+    appId: "1:393446307606:web:69f1f038edf659739e8237",
+    measurementId: "G-160CC381TP"
 };
 
+// Inicializa
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-if (!firebaseConfig || !firebaseConfig.projectId) {
-  document.getElementById('statusApp').innerText = '⚠️ Cole seu firebaseConfig no arquivo index.html';
-  throw new Error('firebaseConfig não configurado');
-}
+/* ============================================================
+   FUNÇÃO: SALVAR TÉCNICO NO FIRESTORE
+   ============================================================ */
+document.getElementById("btnSalvar").addEventListener("click", async () => {
+    
+    const name = document.getElementById("techName").value.trim();
+    const order = Number(document.getElementById("techOrder").value);
+    const status = document.getElementById("techStatus").value;
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-/* Coleções:
-   - technicians: documento por técnico { name, status("ATIVO"|"AUSENTE"), order: number }
-   - absences: { technicianId, start (ISO), end (ISO), reason }
-   - tasks: { timestamp, technicianId, activity }
-   - meta/rotation: { tecnicoIndex: number } // doc único para gerenciar index
-*/
-
-const selectors = {
-  listaTecnicos: document.getElementById('listaTecnicos'),
-  selTec: document.getElementById('selTec'),
-  ultimasTarefas: document.getElementById('ultimasTarefas'),
-  statusApp: document.getElementById('statusApp'),
-  adminRes: document.getElementById('adminRes'),
-  resAusencia: document.getElementById('resAusencia')
-};
-
-async function carregarTudo() {
-  selectors.statusApp.innerText = 'Carregando dados...';
-  try {
-    await recalcularStatusPelaAusencia(); // ajusta status localmente baseado em ausências
-    await renderListaTecnicos();
-    await renderUltimasTarefas();
-    selectors.statusApp.innerText = 'Pronto';
-  } catch (e) {
-    selectors.statusApp.innerText = 'Erro: ' + e.message;
-    console.error(e);
-  }
-}
-
-/* Renderiza técnicos (ordenados por order) e preenche select */
-async function renderListaTecnicos() {
-  const q = await db.collection('technicians').orderBy('order').get();
-  const docs = q.docs.map(d => ({ id: d.id, ...d.data() }));
-  if (docs.length === 0) {
-    selectors.listaTecnicos.innerHTML = '<span class="muted">Nenhum técnico cadastrado.</span>';
-    selectors.selTec.innerHTML = '';
-    return;
-  }
-  // lista visual
-  let html = '<table><thead><tr><th>Ordem</th><th>Nome</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
-  selectors.selTec.innerHTML = '';
-  docs.forEach(d => {
-    html += `<tr><td>${d.order}</td><td>${d.name}</td><td>${d.status || 'ATIVO'}</td>
-      <td>
-        <button data-id="${d.id}" class="btnEdit">Editar</button>
-        <button data-id="${d.id}" class="btnToggle">${d.status==='AUSENTE' ? 'Reativar' : 'Inativar'}</button>
-      </td></tr>`;
-    const opt = document.createElement('option');
-    opt.value = d.id;
-    opt.text = `${d.name} (${d.status || 'ATIVO'})`;
-    selectors.selTec.appendChild(opt);
-  });
-  html += '</tbody></table>';
-  selectors.listaTecnicos.innerHTML = html;
-
-  // bind buttons
-  Array.from(document.getElementsByClassName('btnToggle')).forEach(b=>{
-    b.onclick = async (ev)=>{
-      const id = b.getAttribute('data-id');
-      const doc = await db.collection('technicians').doc(id).get();
-      const cur = doc.data();
-      const novo = (cur.status === 'AUSENTE') ? 'ATIVO' : 'AUSENTE';
-      await db.collection('technicians').doc(id).update({ status: novo });
-      await carregarTudo();
-    };
-  });
-  Array.from(document.getElementsByClassName('btnEdit')).forEach(b=>{
-    b.onclick = async (ev)=>{
-      const id = b.getAttribute('data-id');
-      const doc = await db.collection('technicians').doc(id).get();
-      const cur = doc.data();
-      const nome = prompt('Nome do técnico:', cur.name);
-      if (nome === null) return;
-      const ordem = prompt('Ordem (número):', String(cur.order || 1));
-      await db.collection('technicians').doc(id).update({ name: nome, order: Number(ordem) });
-      await carregarTudo();
-    };
-  });
-}
-
-/* Incluir tarefa: pega técnicos ATIVOS em order, usa meta/rotation para avançar e grava task */
-async function incluirTarefa() {
-  const atividade = document.getElementById('atividade').value || '';
-  selectors.statusApp.innerText = 'Registrando tarefa...';
-  // transaction para evitar race
-  const metaRef = db.collection('meta').doc('rotation');
-  try {
-    await db.runTransaction(async tx => {
-      // busca técnicos ATIVOS ordenados
-      const snap = await tx.get(db.collection('technicians').orderBy('order'));
-      const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => (x.status||'ATIVO') === 'ATIVO');
-      if (all.length === 0) throw new Error('Nenhum técnico ATIVO.');
-      // pega meta
-      const meta = await tx.get(metaRef);
-      let idx = 0;
-      if (meta.exists && typeof meta.data().tecnicoIndex === 'number') idx = meta.data().tecnicoIndex;
-      // Avança (se idx fora do range, reseta)
-      if (idx < 0 || idx >= all.length) idx = -1;
-      idx = (idx + 1) % all.length;
-      const tecnico = all[idx];
-
-      // grava tarefa
-      const now = new Date();
-      await tx.set(metaRef, { tecnicoIndex: idx }, { merge: true });
-      await tx.set(db.collection('tasks').doc(), {
-        timestamp: now.toISOString(),
-        displayTS: now.toLocaleString(),
-        technicianId: tecnico.id,
-        technicianName: tecnico.name,
-        activity: atividade
-      });
-      // retorno implícito
-      return { tecnico: tecnico, time: now.toISOString() };
-    });
-    document.getElementById('atividade').value = '';
-    selectors.statusApp.innerText = 'Tarefa registrada.';
-    await renderUltimasTarefas();
-  } catch (e) {
-    selectors.statusApp.innerText = 'Erro: ' + e.message;
-    console.error(e);
-    alert('Erro ao incluir tarefa: ' + e.message);
-  }
-}
-
-/* Render últimas tarefas */
-async function renderUltimasTarefas(limit = 20) {
-  const snap = await db.collection('tasks').orderBy('timestamp', 'desc').limit(limit).get();
-  if (snap.empty) {
-    selectors.ultimasTarefas.innerHTML = '<span class="muted">Sem tarefas</span>';
-    return;
-  }
-  let html = '<table><thead><tr><th>Quando</th><th>Técnico</th><th>Atividade</th></tr></thead><tbody>';
-  snap.docs.forEach(d => {
-    const r = d.data();
-    html += `<tr><td>${r.displayTS || r.timestamp}</td><td>${r.technicianName}</td><td>${(r.activity||'')}</td></tr>`;
-  });
-  html += '</tbody></table>';
-  selectors.ultimasTarefas.innerHTML = html;
-}
-
-/* Registrar ausência: grava em absences e atualiza status do técnico */
-async function registrarAusencia() {
-  const tid = document.getElementById('selTec').value;
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
-  const motivo = document.getElementById('motivo').value || '';
-  if (!tid || !start || !end) { selectors.resAusencia.innerText = 'Preencha técnico, data início e fim.'; return; }
-  selectors.resAusencia.innerText = 'Registrando...';
-  try {
-    const sIso = new Date(start).toISOString();
-    const eIso = new Date(end).toISOString();
-    // grava ausência
-    await db.collection('absences').doc().set({
-      technicianId: tid,
-      start: sIso,
-      end: eIso,
-      reason: motivo,
-      createdAt: new Date().toISOString()
-    });
-    // atualiza status do técnico para AUSENTE
-    await db.collection('technicians').doc(tid).update({ status: 'AUSENTE' });
-    selectors.resAusencia.innerText = 'Ausência registrada.';
-    // limpa inputs
-    document.getElementById('motivo').value = '';
-    await carregarTudo();
-  } catch (e) {
-    selectors.resAusencia.innerText = 'Erro: ' + e.message;
-    console.error(e);
-  }
-}
-
-/* Recalcula e atualiza status dos técnicos com base nas ausências atuais */
-async function recalcularStatusPelaAusencia() {
-  // pega todas as ausências ativas na data de hoje
-  const allAbs = await db.collection('absences').get();
-  const now = new Date(); now.setHours(0,0,0,0);
-  // mapeia por technicianId
-  const idsAusentes = new Set();
-  allAbs.docs.forEach(d => {
-    const v = d.data();
-    const s = new Date(v.start); s.setHours(0,0,0,0);
-    const e = new Date(v.end); e.setHours(23,59,59,999);
-    if (now >= s && now <= e) idsAusentes.add(v.technicianId);
-  });
-  // pega todos técnicos e atualiza status se necessário
-  const techSnap = await db.collection('technicians').get();
-  const batch = db.batch();
-  techSnap.docs.forEach(doc => {
-    const id = doc.id;
-    const cur = doc.data();
-    const should = idsAusentes.has(id) ? 'AUSENTE' : 'ATIVO';
-    if ((cur.status||'ATIVO') !== should) {
-      batch.update(doc.ref, { status: should });
+    if (!name || !order) {
+        alert("Preencha todos os campos!");
+        return;
     }
-  });
-  await batch.commit();
-}
 
-/* Admin: criar dados de exemplo */
-async function criarDadosExemplo() {
-  selectors.adminRes.innerText = 'Criando dados...';
-  // exemplo de técnicos
-  const exemplos = [
-    { name:'João Silva', order:1, status:'ATIVO' },
-    { name:'Maria Santos', order:2, status:'ATIVO' },
-    { name:'Carlos Lima', order:3, status:'ATIVO' }
-  ];
-  // apagar coleção technicians (simples)
-  const snap = await db.collection('technicians').get();
-  const batch = db.batch();
-  snap.docs.forEach(d => batch.delete(d.ref));
-  await batch.commit();
-  // inserir novos
-  for (let i=0;i<exemplos.length;i++){
-    await db.collection('technicians').add(exemplos[i]);
-  }
-  // meta
-  await db.collection('meta').doc('rotation').set({ tecnicoIndex: -1 });
-  selectors.adminRes.innerText = 'Dados de exemplo criados.';
-  await carregarTudo();
-}
+    try {
+        await db.collection("technicians").add({
+            name: name,
+            order: order,
+            status: status
+        });
 
-/* Admin: limpar coleções (use com cuidado) */
-async function limparTudo() {
-  if (!confirm('Remover tasks, absences e technicians? Isso é irreversível')) return;
-  selectors.adminRes.innerText = 'Limpando...';
-  const cols = ['tasks','absences','technicians'];
-  for (const c of cols){
-    const snap = await db.collection(c).get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-  }
-  await db.collection('meta').doc('rotation').set({ tecnicoIndex: -1 });
-  selectors.adminRes.innerText = 'Limpo.';
-  await carregarTudo();
-}
+        alert("Técnico salvo com sucesso!");
 
-/* Event bindings */
-document.getElementById('btnIncluir').onclick = incluirTarefa;
-document.getElementById('btnRefresh').onclick = carregarTudo;
-document.getElementById('btnAusencia').onclick = registrarAusencia;
-document.getElementById('btnInit').onclick = criarDadosExemplo;
-document.getElementById('btnClear').onclick = limparTudo;
-document.getElementById('btnFixStatus').onclick = async ()=>{
-  selectors.adminRes.innerText = 'Recalculando...';
-  await recalcularStatusPelaAusencia();
-  selectors.adminRes.innerText = 'Recalculo concluído.';
-  await carregarTudo();
-};
+        document.getElementById("techName").value = "";
+        document.getElementById("techOrder").value = "";
+        document.getElementById("techStatus").value = "ativo";
 
-/* Inicial */
-carregarTudo();
-
+    } catch (error) {
+        alert("Erro ao salvar: " + error.message);
+        console.error("Firestore error:", error);
+    }
+});
 </script>
+
 </body>
 </html>
