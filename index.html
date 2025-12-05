@@ -1,118 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Escala</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Escala - Independente</title>
+<link rel="stylesheet" href="assets/css/style.css">
 
-    <!-- Firebase compat -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+<!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        input, select {
-            padding: 8px;
-            margin: 5px 0;
-            width: 100%;
-        }
-        button {
-            padding: 10px;
-            margin-top: 10px;
-            cursor: pointer;
-            width: 100%;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .container {
-            max-width: 400px;
-            margin: auto;
-        }
-    </style>
+<script src="assets/js/firebase.js"></script>
+<script src="assets/js/app.js"></script>
 </head>
 
 <body>
-<div class="container">
+<h1>Painel de Escala</h1>
+<div id="statusApp">Carregando...</div>
 
-    <h2>Cadastro de Técnicos</h2>
+<button id="btnIncluir">Incluir Tarefa</button>
+<button id="btnRefresh">Atualizar</button>
 
-    <label>Nome do técnico:</label>
-    <input type="text" id="techName">
+<h3>Técnicos</h3>
+<div id="listaTecnicos"></div>
 
-    <label>Ordem:</label>
-    <input type="number" id="techOrder">
+<h3>Registrar ausência</h3>
+<select id="selTec"></select>
+<input type="date" id="startDate">
+<input type="date" id="endDate">
+<input type="text" id="motivo" placeholder="Motivo">
+<button id="btnAusencia">Registrar</button>
+<div id="resAusencia"></div>
 
-    <label>Status:</label>
-    <select id="techStatus">
-        <option value="ativo">Ativo</option>
-        <option value="inativo">Inativo</option>
-    </select>
-
-    <button id="btnSalvar">Salvar Técnico</button>
-
-</div>
-
-<script>
-/* ============================================================
-   CONFIGURAÇÃO DO FIREBASE — SOMENTE UMA VEZ!
-   ============================================================ */
-const firebaseConfig = {
-    apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
-    authDomain: "escalaconfig.firebaseapp.com",
-    projectId: "escalaconfig",
-    storageBucket: "escalaconfig.firebasestorage.app",
-    messagingSenderId: "393446307606",
-    appId: "1:393446307606:web:69f1f038edf659739e8237",
-    measurementId: "G-160CC381TP"
-};
-
-// Inicializa Firebase UMA vez
-firebase.initializeApp(firebaseConfig);
-
-// Inicializa Firestore UMA vez
-const db = firebase.firestore();
-
-/* ============================================================
-   BOTÃO – SALVAR NO FIRESTORE
-   ============================================================ */
-document.getElementById("btnSalvar").addEventListener("click", async () => {
-    
-    const name = document.getElementById("techName").value.trim();
-    const order = Number(document.getElementById("techOrder").value);
-    const status = document.getElementById("techStatus").value;
-
-    if (!name || !order) {
-        alert("Preencha todos os campos!");
-        return;
-    }
-
-    try {
-        await db.collection("technicians").add({
-            name: name,
-            order: order,
-            status: status
-        });
-
-        alert("Técnico salvo com sucesso!");
-
-        document.getElementById("techName").value = "";
-        document.getElementById("techOrder").value = "";
-        document.getElementById("techStatus").value = "ativo";
-
-    } catch (error) {
-        alert("Erro ao salvar: " + error.message);
-        console.error("Firestore error:", error);
-    }
-});
-</script>
+<h3>Últimas tarefas</h3>
+<div id="ultimasTarefas"></div>
 
 </body>
 </html>
