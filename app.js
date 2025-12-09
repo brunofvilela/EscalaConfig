@@ -140,103 +140,34 @@ async function loadTechnicians(){
   const [techs, abs] = await Promise.all([loadTechniciansRaw(), loadAbsencesRaw()]);
 
   technicianList.innerHTML = "";
-    
-    technicianList.innerHTML = "";
-    for (const t of techs) {
-      const status = await calculateTechnicianStatus(t.id, abs);
-  
-      // cartão principal
-      const card = document.createElement("div");
-      card.className = "technician-card";
-  
-      // coluna esquerda: info (nome + meta)
-      const info = document.createElement("div");
-      info.className = "tech-info";
-  
-      const nameEl = document.createElement("div");
-      nameEl.className = "tech-name";
-      nameEl.textContent = t.name || "";
-  
-      const metaEl = document.createElement("div");
-      metaEl.className = "meta";
-      metaEl.textContent = "Ordem: " + (t.order ?? "");
-  
-      info.appendChild(nameEl);
-      info.appendChild(metaEl);
-  
-      // coluna direita: badge + ações
-      const right = document.createElement("div");
-      right.style.display = "flex";
-      right.style.alignItems = "center";
-      right.style.gap = "10px";
-  
-      const badge = document.createElement("span");
-      badge.className = "badge " + (status === "ATIVO" ? "badge-ativo" : "badge-ausente");
-      badge.textContent = status;
-  
-      const actions = document.createElement("div");
-      actions.className = "actions";
-  
-      // botão editar
-      const editBtn = document.createElement("button");
-      editBtn.className = "btn-edit";
-      editBtn.type = "button";
-      editBtn.title = "Editar técnico";
-      editBtn.textContent = "✏️";
-      editBtn.onclick = async () => {
-        // carregar documento diretamente (usa getDoc)
-        try {
-          const docRef = doc(db, "technicians", t.id);
-          const docSnap = await getDoc(docRef);
-          if (!docSnap.exists()) return alert("Documento não encontrado.");
-          const data = docSnap.data();
-  
-          modalTitle.textContent = "Editar Técnico (status automático)";
-          modalBody.innerHTML = `
-            <label>Nome</label>
-            <input id="modal-field-name" value="${escapeHtml(data.name || '')}" />
-            <label>Ordem</label>
-            <input id="modal-field-order" type="number" value="${escapeHtml(String(data.order || ''))}" />
-            <p class="muted">O status é atualizado automaticamente a partir do histórico de ausências.</p>
-          `;
-          modalContext = { type: 'tech', id: t.id };
-          modal.setAttribute('aria-hidden', 'false');
-        } catch (err) {
-          console.error(err);
-          alert("Erro ao abrir edição.");
-        }
-      };
-  
-      // botão deletar
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "btn-delete";
-      deleteBtn.type = "button";
-      deleteBtn.title = "Excluir técnico";
-      deleteBtn.textContent = "🗑️";
-      deleteBtn.onclick = async () => {
-        if (!confirm("Excluir técnico?")) return;
-        try {
-          await deleteDoc(doc(db, "technicians", t.id));
-          await loadTechnicians(); // recarrega lista
-        } catch (err) {
-          console.error(err);
-          alert("Erro ao excluir técnico.");
-        }
-      };
-  
-      actions.appendChild(editBtn);
-      actions.appendChild(deleteBtn);
-  
-      right.appendChild(badge);
-      right.appendChild(actions);
-  
-      // montar cartão
-      card.appendChild(info);
-      card.appendChild(right);
-  
-      technicianList.appendChild(card);
-    }
-  
+  for (const t of techs) {
+    const status = await calculateTechnicianStatus(t.id, abs);
+    const item = document.createElement("div");
+    item.className = "item";
+
+    item.innerHTML = `
+      <div class="left">
+        <div>
+          <strong>${escapeHtml(t.name || '')}</strong>
+          <div class="meta">Ordem: ${t.order || ''}</div>
+        </div>
+      </div>
+      <div class="right">
+        <span class="badge ${status==='ATIVO' ? 'badge-ativo' : 'badge-ausente'}">${status}</span>
+        <div class="actions">
+          <button class="btn-edit" data-id="${t.id}">✏️</button>
+          <button class="btn-delete" data-id="${t.id}">🗑️</button>
+        </div>
+      </div>
+    `;
+    technicianList.appendChild(item);
+
+    // add option for absence select
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.name;
+    absenceTechSelect.appendChild(opt);
+  }
 
   // bind buttons
   document.querySelectorAll(".btn-delete").forEach(b=>{
