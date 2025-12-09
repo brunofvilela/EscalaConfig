@@ -2,10 +2,11 @@
 
 Esse projeto foi desenvolvido com as seguintes tecnologias:
 
-- [HTML]
-- [JavaScrpt]
-- [CSS]
+- [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)
+- [JavaScrpt](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+- [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 - [Firebase](https://firebase.google.com/)
+- [GitHub Pages](https://docs.github.com/pt/pages)
 
 ## 💻 Projeto
 
