@@ -7,15 +7,53 @@
 </head>
 <body>
 
-<h1>Gerenciar Técnicos</h1>
-
-<div class="container">
-    <input id="techName" placeholder="Nome do técnico">
-    <button id="btnAddTech">Adicionar Técnico</button>
-    <button id="btnLoadTech">Recarregar</button>
-
-    <div id="technicianList"></div>
-</div>
+    <div class="navbar">
+        <button class="tabBtn" data-tab="tecnicos">Técnicos</button>
+        <button class="tabBtn" data-tab="tarefas">Tarefas</button>
+        <button class="tabBtn" data-tab="ausencias">Ausências</button>
+    </div>
+    
+    <!-- ==== TELA TÉCNICOS ==== -->
+    <section id="tecnicos" class="tab active">
+        <h2>Técnicos</h2>
+    
+        <div class="card">
+            <input id="techName" placeholder="Nome do técnico">
+            <button id="btnAddTech">Adicionar Técnico</button>
+        </div>
+    
+        <h3>Lista de Técnicos</h3>
+        <div id="technicianList"></div>
+    </section>
+    
+    <!-- ==== TELA TAREFAS ==== -->
+    <section id="tarefas" class="tab">
+        <h2>Registrar Tarefa</h2>
+    
+        <div class="card">
+            <input id="taskName" placeholder="Atividade">
+            <button id="btnAddTask">Incluir Tarefa</button>
+        </div>
+    
+        <h3>Histórico de Tarefas</h3>
+        <div id="taskList"></div>
+    </section>
+    
+    <!-- ==== TELA AUSÊNCIAS ==== -->
+    <section id="ausencias" class="tab">
+        <h2>Registrar Ausência</h2>
+    
+        <div class="card">
+            <select id="absenceTech"></select>
+            <input type="date" id="absenceStart">
+            <input type="date" id="absenceEnd">
+            <input id="absenceReason" placeholder="Motivo">
+            <button id="btnAddAbsence">Registrar Ausência</button>
+        </div>
+    
+        <h3>Histórico de Ausências</h3>
+        <div id="absenceList"></div>
+    </section>
 
 <script type="module" src="assets/js/app.js"></script>
 </body>
