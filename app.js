@@ -1,4 +1,4 @@
-import { db, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "./firebase.js";
+import { db, collection, addDoc, getDocs, deleteDoc, doc } from "./firebase.js";
 
 // ==== TABS ====
 document.querySelectorAll(".tabBtn").forEach(btn => {
