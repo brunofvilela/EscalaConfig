@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY_AQUI",
+  apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
   authDomain: "escalaconfig.firebaseapp.com",
   projectId: "escalaconfig",
   storageBucket: "escalaconfig.firebasestorage.app",
