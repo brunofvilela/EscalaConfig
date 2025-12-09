@@ -340,6 +340,7 @@ async function loadAbsences(){
           <strong>${escapeHtml(a.tech || '')}</strong>
           <div class="meta">${escapeHtml(a.start || '')} → ${escapeHtml(a.end || '')} — ${escapeHtml(a.reason || '')}</div>
         </div>
+        </br>
       </div>
       <div class="actions">
         <button class="btn-edit-absence" data-id="${a.id}">✏️</button>
