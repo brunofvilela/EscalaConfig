@@ -1,60 +1,96 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Cadastro de Técnicos</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel de Escala — Técnicos · Tarefas · Ausências</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="topbar">
+    <h1>Painel de Escala</h1>
+    <nav class="tabs">
+      <button class="tabBtn active" data-tab="tab-tecnicos">Técnicos</button>
+      <button class="tabBtn" data-tab="tab-tarefas">Tarefas</button>
+      <button class="tabBtn" data-tab="tab-ausencias">Ausências</button>
+    </nav>
+  </header>
 
-    <div class="navbar">
-        <button class="tabBtn" data-tab="tecnicos">Técnicos</button>
-        <button class="tabBtn" data-tab="tarefas">Tarefas</button>
-        <button class="tabBtn" data-tab="ausencias">Ausências</button>
-    </div>
-    
-    <!-- ==== TELA TÉCNICOS ==== -->
-    <section id="tecnicos" class="tab active">
-        <h2>Técnicos</h2>
-    
-        <div class="card">
-            <input id="techName" placeholder="Nome do técnico">
-            <button id="btnAddTech">Adicionar Técnico</button>
+  <main class="container">
+
+    <!-- TÉCNICOS -->
+    <section id="tab-tecnicos" class="tab active">
+      <div class="card">
+        <h2>Gerenciar Técnicos</h2>
+        <div class="row">
+          <input id="tech-name" placeholder="Nome do técnico" />
+          <select id="tech-status">
+            <option value="ATIVO">ATIVO</option>
+            <option value="AUSENTE">AUSENTE</option>
+          </select>
+          <button id="btn-add-tech" class="primary">Adicionar</button>
         </div>
-    
+      </div>
+
+      <div class="card">
         <h3>Lista de Técnicos</h3>
-        <div id="technicianList"></div>
-    </section>
-    
-    <!-- ==== TELA TAREFAS ==== -->
-    <section id="tarefas" class="tab">
-        <h2>Registrar Tarefa</h2>
-    
-        <div class="card">
-            <input id="taskName" placeholder="Atividade">
-            <button id="btnAddTask">Incluir Tarefa</button>
-        </div>
-    
-        <h3>Histórico de Tarefas</h3>
-        <div id="taskList"></div>
-    </section>
-    
-    <!-- ==== TELA AUSÊNCIAS ==== -->
-    <section id="ausencias" class="tab">
-        <h2>Registrar Ausência</h2>
-    
-        <div class="card">
-            <select id="absenceTech"></select>
-            <input type="date" id="absenceStart">
-            <input type="date" id="absenceEnd">
-            <input id="absenceReason" placeholder="Motivo">
-            <button id="btnAddAbsence">Registrar Ausência</button>
-        </div>
-    
-        <h3>Histórico de Ausências</h3>
-        <div id="absenceList"></div>
+        <div id="technician-list" class="list"></div>
+      </div>
     </section>
 
-<script type="module" src="app.js"></script>
+    <!-- TAREFAS -->
+    <section id="tab-tarefas" class="tab">
+      <div class="card">
+        <h2>Incluir Tarefa (próximo técnico ativo)</h2>
+        <div class="row">
+          <input id="task-activity" placeholder="Descrição da atividade" />
+          <button id="btn-add-task" class="primary">Incluir Tarefa</button>
+        </div>
+        <p class="muted">A rotação usa apenas técnicos com status <strong>ATIVO</strong>.</p>
+      </div>
+
+      <div class="card">
+        <h3>Últimas Tarefas</h3>
+        <div id="task-list" class="list"></div>
+      </div>
+    </section>
+
+    <!-- AUSÊNCIAS -->
+    <section id="tab-ausencias" class="tab">
+      <div class="card">
+        <h2>Registrar Ausência</h2>
+        <div class="row">
+          <select id="absence-tech"></select>
+          <input id="absence-start" type="date" />
+          <input id="absence-end" type="date" />
+          <input id="absence-reason" placeholder="Motivo (opcional)" />
+          <button id="btn-add-absence" class="primary">Registrar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Histórico de Ausências</h3>
+        <div id="absence-list" class="list"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL EDITAR (reutilizável) -->
+  <div id="modal-edit" class="modal" aria-hidden="true">
+    <div class="modal-box">
+      <h3 id="modal-title">Editar</h3>
+      <div id="modal-body">
+        <!-- preenchido dinamicamente -->
+      </div>
+      <div class="modal-actions">
+        <button id="modal-save" class="primary">Salvar</button>
+        <button id="modal-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase + app (módulos ES) -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
