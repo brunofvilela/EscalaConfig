@@ -404,6 +404,7 @@
           <div class="meta">${escapeHtml(t.technicianName||'')} — ${escapeHtml(t.displayTS||t.timestamp||'')}</div>
         </div>
         <div class="actions">
+        </br>
           <button class="btn-edit-task" data-id="${t.id}">✏️</button>
           <button class="btn-delete-task" data-id="${t.id}">🗑️</button>
         </div>
