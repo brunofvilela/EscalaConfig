@@ -1,6 +1,3 @@
-// --------------------------------------------------
-// Firebase Config (importado via firebase.js)
-// --------------------------------------------------
 import { 
     db, 
     collection, 
@@ -10,9 +7,6 @@ import {
     doc 
 } from "./firebase.js";
 
-// --------------------------------------------------
-// Função: Carregar técnicos
-// --------------------------------------------------
 async function loadTechnicians() {
     const list = document.getElementById("technicianList");
     if (!list) return;
@@ -22,42 +16,34 @@ async function loadTechnicians() {
     try {
         const querySnapshot = await getDocs(collection(db, "technicians"));
 
-        list.innerHTML = ""; // limpar lista
+        list.innerHTML = "";
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
 
             const item = document.createElement("div");
             item.className = "tech-item";
-
             item.innerHTML = `
                 <span>${data.name}</span>
-
-                <button class="deleteBtn" data-id="${docSnap.id}">
-                    Excluir
-                </button>
+                <button class="deleteBtn" data-id="${docSnap.id}">Excluir</button>
             `;
 
             list.appendChild(item);
         });
 
-        // Associar os eventos dos botões de exclusão
         document.querySelectorAll(".deleteBtn").forEach((btn) => {
             btn.onclick = async () => {
-                await deleteTechnician(btn.dataset.id);
+                await deleteTech(btn.dataset.id);
             };
         });
 
-    } catch (error) {
-        console.error("Erro ao carregar técnicos:", error);
-        list.innerHTML = "<p>Erro ao carregar dados.</p>";
+    } catch (err) {
+        list.innerHTML = "<p>Erro ao carregar técnicos.</p>";
+        console.error(err);
     }
 }
 
-// --------------------------------------------------
-// Função: Adicionar técnico
-// --------------------------------------------------
-async function addTechnician() {
+async function addTech() {
     const input = document.getElementById("techName");
     if (!input) return;
 
@@ -77,36 +63,26 @@ async function addTechnician() {
         input.value = "";
         loadTechnicians();
 
-    } catch (error) {
-        console.error("Erro ao adicionar técnico:", error);
-        alert("Erro ao salvar técnico.");
+    } catch (err) {
+        console.error(err);
     }
 }
 
-// --------------------------------------------------
-// Função: Excluir técnico
-// --------------------------------------------------
-async function deleteTechnician(id) {
+async function deleteTech(id) {
     try {
         await deleteDoc(doc(db, "technicians", id));
         loadTechnicians();
-    } catch (error) {
-        console.error("Erro ao excluir:", error);
-        alert("Erro ao excluir.");
+    } catch (err) {
+        console.error(err);
     }
 }
 
-// --------------------------------------------------
-// Esperar o DOM carregar antes de associar eventos
-// --------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
+    const addBtn = document.getElementById("btnAddTech");
+    const loadBtn = document.getElementById("btnLoadTech");
 
-    const btnAddTech = document.getElementById("btnAddTech");
-    const btnLoadTech = document.getElementById("btnLoadTech");
+    if (addBtn) addBtn.onclick = addTech;
+    if (loadBtn) loadBtn.onclick = loadTechnicians;
 
-    if (btnAddTech) btnAddTech.onclick = addTechnician;
-    if (btnLoadTech) btnLoadTech.onclick = loadTechnicians;
-
-    // Carregar lista ao abrir
     loadTechnicians();
 });

@@ -1,39 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Painel de Escala - Independente</title>
-<link rel="stylesheet" href="assets/css/style.css">
-
-<!-- Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
-<script src="assets/js/firebase.js"></script>
-<script type="module" src="app.js"></script>
+<meta charset="UTF-8">
+<title>Cadastro de Técnicos</title>
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<h1>Painel de Escala</h1>
-<div id="statusApp">Carregando...</div>
 
-<button id="btnIncluir">Incluir Tarefa</button>
-<button id="btnRefresh">Atualizar</button>
+<h1>Gerenciar Técnicos</h1>
 
-<h3>Técnicos</h3>
-<div id="listaTecnicos"></div>
+<div class="container">
+    <input id="techName" placeholder="Nome do técnico">
+    <button id="btnAddTech">Adicionar Técnico</button>
+    <button id="btnLoadTech">Recarregar</button>
 
-<h3>Registrar ausência</h3>
-<select id="selTec"></select>
-<input type="date" id="startDate">
-<input type="date" id="endDate">
-<input type="text" id="motivo" placeholder="Motivo">
-<button id="btnAusencia">Registrar</button>
-<div id="resAusencia"></div>
+    <div id="technicianList"></div>
+</div>
 
-<h3>Últimas tarefas</h3>
-<div id="ultimasTarefas"></div>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
