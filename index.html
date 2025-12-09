@@ -9,7 +9,7 @@
 <body>
   <header class="topbar">
     <h1>Painel de Escala</h1>
-    <nav class="tabs">
+    <nav class="tabs" role="navigation" aria-label="Navegação">
       <button class="tabBtn active" data-tab="tab-tecnicos">Técnicos</button>
       <button class="tabBtn" data-tab="tab-tarefas">Tarefas</button>
       <button class="tabBtn" data-tab="tab-ausencias">Ausências</button>
@@ -24,12 +24,10 @@
         <h2>Gerenciar Técnicos</h2>
         <div class="row">
           <input id="tech-name" placeholder="Nome do técnico" />
-          <select id="tech-status">
-            <option value="ATIVO">ATIVO</option>
-            <option value="AUSENTE">AUSENTE</option>
-          </select>
+          <input id="tech-order" type="number" placeholder="Ordem (ex: 1)" />
           <button id="btn-add-tech" class="primary">Adicionar</button>
         </div>
+        <p class="muted">O status é calculado automaticamente com base no histórico de ausências (não editável).</p>
       </div>
 
       <div class="card">
@@ -46,7 +44,7 @@
           <input id="task-activity" placeholder="Descrição da atividade" />
           <button id="btn-add-task" class="primary">Incluir Tarefa</button>
         </div>
-        <p class="muted">A rotação usa apenas técnicos com status <strong>ATIVO</strong>.</p>
+        <p class="muted">Técnicos com status <strong>AUSENTE</strong> não receberão tarefas hoje.</p>
       </div>
 
       <div class="card">
@@ -90,7 +88,7 @@
     </div>
   </div>
 
-  <!-- Firebase + app (módulos ES) -->
+  <!-- carrega app (ES modules) -->
   <script type="module" src="app.js"></script>
 </body>
 </html>

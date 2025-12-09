@@ -9,7 +9,10 @@ import {
   doc,
   query,
   orderBy,
-  limit
+  limit,
+  getDoc,
+  setDoc,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -36,5 +39,8 @@ export {
   doc,
   query,
   orderBy,
-  limit
+  limit,
+  getDoc,
+  setDoc,
+  runTransaction
 };

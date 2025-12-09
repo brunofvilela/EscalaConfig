@@ -1,57 +1,59 @@
 :root{
-    --bg: #f4f7fb;
-    --card: #ffffff;
-    --accent: #1a73e8;
-    --muted: #6b7280;
-  }
-  
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: Inter, Roboto, Arial, sans-serif;
-    background:var(--bg);
-    color:#111827;
-    -webkit-font-smoothing:antialiased;
-  }
-  
-  .topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:14px 20px;
-    background:linear-gradient(90deg,#0f172a 0%, #111827 100%);
-    color:white;
-  }
-  .topbar h1{margin:0; font-size:18px}
-  .tabs{display:flex;gap:8px}
-  .tabBtn{
-    background:transparent;color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.06);
-    padding:8px 12px;border-radius:8px;cursor:pointer;
-  }
-  .tabBtn.active{background:rgba(255,255,255,0.08)}
-  
-  .container{max-width:1100px;margin:18px auto;padding:0 18px}
-  
-  .card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
-  .row{display:flex;gap:8px;align-items:center}
-  .row input, .row select {flex:1;padding:8px;border:1px solid #e6e9ef;border-radius:8px}
-  .primary{background:var(--accent);color:white;border:none;padding:9px 12px;border-radius:8px;cursor:pointer}
-  .muted{color:var(--muted);font-size:13px;margin-top:8px}
-  
-  .list{display:flex;flex-direction:column;gap:8px}
-  .item{
-    display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:10px;border-radius:8px;border:1px solid #eef2f7;
-  }
-  .item .left{display:flex;gap:12px;align-items:center}
-  .item .meta{font-size:13px;color:var(--muted)}
-  .item .actions button{margin-left:8px;border-radius:8px;padding:6px 8px;border:0;cursor:pointer}
-  .btn-edit{background:#f3f4f6}
-  .btn-delete{background:#fee2e2;color:#991b1b}
-  .btn-primary{background:var(--accent);color:white}
-  
-  /* Modal */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)}
-  .modal[aria-hidden="false"]{display:flex}
-  .modal-box{background:white;padding:18px;border-radius:10px;width:420px;max-width:92%}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
-  
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --accent: #1a73e8;
+  --muted: #6b7280;
+  --green: #16a34a;
+  --red: #dc2626;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: Inter, Roboto, Arial, sans-serif;
+  background:var(--bg);
+  color:#111827;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 20px;
+  background:linear-gradient(90deg,#0f172a 0%, #111827 100%);
+  color:white;
+}
+.topbar h1{margin:0; font-size:18px}
+.tabs{display:flex;gap:8px}
+.tabBtn{
+  background:transparent;color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.06);
+  padding:8px 12px;border-radius:8px;cursor:pointer;
+}
+.tabBtn.active{background:rgba(255,255,255,0.08)}
+
+.container{max-width:1100px;margin:18px auto;padding:0 18px}
+
+.card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+.row{display:flex;gap:8px;align-items:center}
+.row input, .row select {flex:1;padding:8px;border:1px solid #e6e9ef;border-radius:8px}
+.primary{background:var(--accent);color:white;border:none;padding:9px 12px;border-radius:8px;cursor:pointer}
+.muted{color:var(--muted);font-size:13px;margin-top:8px}
+
+.list{display:flex;flex-direction:column;gap:8px}
+.item{
+  display:flex;align-items:center;justify-content:space-between;background:#ffffff;padding:10px;border-radius:8px;border:1px solid #eef2f7;
+}
+.item .left{display:flex;gap:12px;align-items:center}
+.item .meta{font-size:13px;color:var(--muted)}
+.item .actions button{margin-left:8px;border-radius:8px;padding:6px 8px;border:0;cursor:pointer}
+.btn-edit{background:#f3f4f6}
+.btn-delete{background:#fee2e2;color:#991b1b}
+.badge{padding:6px 8px;border-radius:999px;font-weight:600;font-size:12px}
+.badge-ativo{background:var(--green);color:white}
+.badge-ausente{background:var(--red);color:white}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)}
+.modal[aria-hidden="false"]{display:flex}
+.modal-box{background:white;padding:18px;border-radius:10px;width:420px;max-width:92%}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
