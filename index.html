@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Painel de Escala — Técnicos · Tarefas · Ausências</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="topbar">
@@ -17,70 +17,21 @@
   </header>
 
   <main class="container">
-
     <!-- TÉCNICOS -->
-    <section id="tab-tecnicos" class="tab active">
-      <div class="card">
-        <h2>Gerenciar Técnicos</h2>
-        <div class="row">
-          <input id="tech-name" placeholder="Nome do técnico" />
-          <input id="tech-order" type="number" placeholder="Ordem (ex: 1)" />
-          <button id="btn-add-tech" class="primary">Adicionar</button>
-        </div>
-        <p class="muted">O status é calculado automaticamente com base no histórico de ausências (não editável).</p>
-      </div>
-
-      <div class="card">
-        <h3>Lista de Técnicos</h3>
-        <div id="technician-list" class="list"></div>
-      </div>
-    </section>
+    <section id="tab-tecnicos" class="tab active"></section>
 
     <!-- TAREFAS -->
-    <section id="tab-tarefas" class="tab">
-      <div class="card">
-        <h2>Incluir Tarefa (próximo técnico ativo)</h2>
-        <div class="row">
-          <input id="task-activity" placeholder="Descrição da atividade" />
-          <button id="btn-add-task" class="primary">Incluir Tarefa</button>
-        </div>
-        <p class="muted">Técnicos com status <strong>AUSENTE</strong> não receberão tarefas hoje.</p>
-      </div>
-
-      <div class="card">
-        <h3>Últimas Tarefas</h3>
-        <div id="task-list" class="list"></div>
-      </div>
-    </section>
+    <section id="tab-tarefas" class="tab"></section>
 
     <!-- AUSÊNCIAS -->
-    <section id="tab-ausencias" class="tab">
-      <div class="card">
-        <h2>Registrar Ausência</h2>
-        <div class="row">
-          <select id="absence-tech"></select>
-          <input id="absence-start" type="date" />
-          <input id="absence-end" type="date" />
-          <input id="absence-reason" placeholder="Motivo (opcional)" />
-          <button id="btn-add-absence" class="primary">Registrar</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Histórico de Ausências</h3>
-        <div id="absence-list" class="list"></div>
-      </div>
-    </section>
-
+    <section id="tab-ausencias" class="tab"></section>
   </main>
 
-  <!-- MODAL EDITAR (reutilizável) -->
+  <!-- MODAL EDITAR -->
   <div id="modal-edit" class="modal" aria-hidden="true">
     <div class="modal-box">
       <h3 id="modal-title">Editar</h3>
-      <div id="modal-body">
-        <!-- preenchido dinamicamente -->
-      </div>
+      <div id="modal-body"></div>
       <div class="modal-actions">
         <button id="modal-save" class="primary">Salvar</button>
         <button id="modal-cancel">Cancelar</button>
@@ -88,7 +39,6 @@
     </div>
   </div>
 
-  <!-- carrega app (ES modules) -->
-  <script type="module" src="app.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

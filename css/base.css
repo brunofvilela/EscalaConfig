@@ -1,0 +1,30 @@
+:root{
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --accent: #1a73e8;
+    --muted: #6b7280;
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: #111827;
+  }
+  .muted {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  

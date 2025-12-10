@@ -1,0 +1,23 @@
+.modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.45);
+  }
+  .modal[aria-hidden="false"] { display: flex; }
+  .modal-box {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    width: 420px;
+    max-width: 92%;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  
