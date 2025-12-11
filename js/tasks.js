@@ -1,15 +1,9 @@
 import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, limit, runTransaction } from "./firebase.js";
 import { escapeHtml, todayISO } from "./utils.js";
-import { openModal } from "./modal.js";
 
-const taskListContainer = document.getElementById("tab-tarefas");
-const taskInput = document.createElement("input");
-taskInput.placeholder = "Descrição da atividade";
-const btnAddTask = document.createElement("button");
-btnAddTask.className = "primary";
-btnAddTask.textContent = "Incluir Tarefa";
-
-taskListContainer.append(taskInput, btnAddTask);
+const taskList = document.getElementById("task-list");
+const inputActivity = document.getElementById("task-activity");
+const btnAddTask = document.getElementById("btn-add-task");
 
 const tasksCol = collection(db, "tasks");
 const techsCol = collection(db, "technicians");
@@ -17,66 +11,58 @@ const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
   btnAddTask.addEventListener("click", addTask);
-  await renderTasks();
+  await loadTasks();
 }
 
-export async function loadTasksRaw(limitN = 50) {
-  const q = query(tasksCol, orderBy("timestamp", "desc"), limit(limitN));
+async function loadTasksRaw() {
+  const q = query(tasksCol, orderBy("timestamp", "desc"), limit(50));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-async function renderTasks() {
-  const tasks = await loadTasksRaw(50);
-  taskListContainer.querySelectorAll(".task-item")?.forEach(el => el.remove());
-
-  for (const t of tasks) {
+async function loadTasks() {
+  const arr = await loadTasksRaw();
+  taskList.innerHTML = "";
+  arr.forEach(t => {
     const div = document.createElement("div");
-    div.className = "task-item item";
+    div.className = "item";
     div.innerHTML = `
       <div class="left">
-        <div><strong>${escapeHtml(t.activity)}</strong></div>
-        <div class="meta">${escapeHtml(t.technicianName || '')} — ${escapeHtml(t.displayTS || t.timestamp)}</div>
+        <strong>${escapeHtml(t.activity)}</strong>
+        <span class="meta">${t.technicianName} — ${t.displayTS}</span>
       </div>
       <div class="actions">
-        <button class="btn-delete-task">🗑️</button>
+        <button class="btn-delete" data-id="${t.id}">🗑️</button>
       </div>
     `;
-    const delBtn = div.querySelector(".btn-delete-task");
-    delBtn.onclick = async () => {
-      if (!confirm("Excluir tarefa?")) return;
+    div.querySelector(".btn-delete").onclick = async () => {
       await deleteDoc(doc(db, "tasks", t.id));
-      await renderTasks();
+      await loadTasks();
     };
-    taskListContainer.appendChild(div);
-  }
+    taskList.appendChild(div);
+  });
 }
 
 async function addTask() {
-  const activity = (taskInput.value || "").trim();
+  const activity = inputActivity.value.trim();
   if (!activity) return alert("Digite a atividade.");
 
-  // carregar técnicos ativos
-  const techsSnap = await getDocs(techsCol);
-  const techs = techsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-  const today = todayISO();
-  const activeTechs = techs.filter(t => !t.absent); // simplificação
+  const techSnap = await getDocs(techsCol);
+  const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const active = techs.sort((a, b) => a.order - b.order);
 
-  if (activeTechs.length === 0) return alert("Nenhum técnico ativo hoje.");
+  if (!active.length) return alert("Nenhum técnico disponível.");
 
   const chosenIdx = await runTransaction(db, async tx => {
-    const metaSnap = await tx.get(metaDocRef);
-    let idx = -1;
-    if (metaSnap.exists()) {
-      const data = metaSnap.data();
-      idx = typeof data.tecnicoIndex === "number" ? data.tecnicoIndex : -1;
-    }
-    const nextIdx = (idx + 1) % activeTechs.length;
-    tx.update(metaDocRef, { tecnicoIndex: nextIdx });
-    return nextIdx;
+    const snap = await tx.get(metaDocRef);
+    let idx = snap.exists() ? snap.data().tecnicoIndex ?? -1 : -1;
+    idx = (idx + 1) % active.length;
+    tx.set(metaDocRef, { tecnicoIndex: idx });
+    return idx;
   });
 
-  const chosen = activeTechs[chosenIdx];
+  const chosen = active[chosenIdx];
+
   const now = new Date();
   await addDoc(tasksCol, {
     activity,
@@ -85,6 +71,7 @@ async function addTask() {
     timestamp: now.toISOString(),
     displayTS: now.toLocaleString()
   });
-  taskInput.value = "";
-  await renderTasks();
+
+  inputActivity.value = "";
+  await loadTasks();
 }

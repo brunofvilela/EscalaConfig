@@ -1,15 +1,39 @@
 import { db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "./firebase.js";
-import { escapeHtml, todayISO } from "./utils.js";
-import { openModal, modalContext } from "./modal.js";
+import { escapeHtml } from "./utils.js";
+import { openModal } from "./modal.js";
 
-const technicianList = document.getElementById("tab-tecnicos");
-const btnAddTech = document.createElement("button");
-btnAddTech.className = "primary";
-btnAddTech.textContent = "Adicionar Técnico";
-technicianList.appendChild(btnAddTech);
+const techList = document.getElementById("technician-list");
+const nameInput = document.getElementById("tech-name");
+const orderInput = document.getElementById("tech-order");
+const btnAdd = document.getElementById("btn-add-tech");
+const selectAbsTech = document.getElementById("absence-tech");
 
 const techsCol = collection(db, "technicians");
-let absenceList = []; // será populado via initAbsences se necessário
+
+export async function initTechnicians() {
+  btnAdd.addEventListener("click", async () => {
+    openModal({
+      title: "Adicionar Técnico",
+      bodyHTML: `
+        <label>Nome</label>
+        <input id="modal-name">
+        <label>Ordem</label>
+        <input id="modal-order" type="number">
+      `,
+      onSave: async () => {
+        const name = document.getElementById("modal-name").value.trim();
+        let order = Number(document.getElementById("modal-order").value);
+        if (!name) return alert("Nome obrigatório.");
+        const techs = await loadTechniciansRaw();
+        if (!order) order = techs.length + 1;
+        await addDoc(techsCol, { name, order });
+        await loadTechnicians();
+      }
+    });
+  });
+
+  await loadTechnicians();
+}
 
 export async function loadTechniciansRaw() {
   const q = query(techsCol, orderBy("order"));
@@ -17,61 +41,55 @@ export async function loadTechniciansRaw() {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-export async function initTechnicians() {
-  btnAddTech.addEventListener("click", async () => {
-    const nextOrder = (await loadTechniciansRaw()).length + 1;
-    openModal("tech-add", { nextOrder, onSave: async () => await addTechnician() });
+async function loadTechnicians() {
+  const techs = await loadTechniciansRaw();
+
+  // Atualiza select da aba ausências
+  selectAbsTech.innerHTML = "";
+  techs.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t.id;
+    opt.textContent = t.name;
+    selectAbsTech.appendChild(opt);
   });
 
-  await renderTechnicians();
-}
-
-async function renderTechnicians() {
-  const techs = await loadTechniciansRaw();
-  technicianList.innerHTML = "";
-  technicianList.appendChild(btnAddTech);
-
-  for (const t of techs) {
-    const card = document.createElement("div");
-    card.className = "technician-card";
-    card.innerHTML = `
-      <div class="tech-info">
-        <div class="tech-name">${escapeHtml(t.name)}</div>
-        <div class="meta">Ordem: ${t.order}</div>
+  techList.innerHTML = "";
+  techs.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="left">
+        <strong>${escapeHtml(t.name)}</strong>
+        <span class="meta">Ordem: ${t.order}</span>
       </div>
       <div class="actions">
         <button class="btn-edit">✏️</button>
         <button class="btn-delete">🗑️</button>
       </div>
     `;
-    const editBtn = card.querySelector(".btn-edit");
-    const delBtn = card.querySelector(".btn-delete");
 
-    editBtn.onclick = () => openModal("tech-edit", { tech: t, onSave: async () => await editTechnician(t) });
-    delBtn.onclick = () => deleteTechnician(t);
+    div.querySelector(".btn-delete").onclick = async () => {
+      if (!confirm("Excluir técnico?")) return;
+      await deleteDoc(doc(db, "technicians", t.id));
+      await loadTechnicians();
+    };
 
-    technicianList.appendChild(card);
-  }
-}
+    div.querySelector(".btn-edit").onclick = () => openModal({
+      title: "Editar Técnico",
+      bodyHTML: `
+        <label>Nome</label>
+        <input id="modal-name" value="${escapeHtml(t.name)}">
+        <label>Ordem</label>
+        <input id="modal-order" type="number" value="${t.order}">
+      `,
+      onSave: async () => {
+        const name = document.getElementById("modal-name").value.trim();
+        const order = Number(document.getElementById("modal-order").value);
+        await updateDoc(doc(db, "technicians", t.id), { name, order });
+        await loadTechnicians();
+      }
+    });
 
-async function addTechnician() {
-  const name = prompt("Nome do técnico:");
-  if (!name) return alert("Nome obrigatório.");
-  const techs = await loadTechniciansRaw();
-  const order = techs.length + 1;
-  await addDoc(techsCol, { name, order });
-  await renderTechnicians();
-}
-
-async function editTechnician(t) {
-  const name = prompt("Editar nome:", t.name);
-  if (!name) return alert("Nome obrigatório.");
-  await updateDoc(doc(db, "technicians", t.id), { name });
-  await renderTechnicians();
-}
-
-async function deleteTechnician(t) {
-  if (!confirm(`Excluir técnico ${t.name}?`)) return;
-  await deleteDoc(doc(db, "technicians", t.id));
-  await renderTechnicians();
+    techList.appendChild(div);
+  });
 }

@@ -6,23 +6,28 @@ export function initModal() {
   const modalCancel = document.getElementById("modal-cancel");
 
   modalSave.addEventListener("click", async () => {
-    if (modalContext && modalContext.onSave) await modalContext.onSave();
+    if (modalContext?.onSave) {
+      await modalContext.onSave();
+    }
     closeModal();
   });
 
   modalCancel.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
 }
 
-export function openModal(type, data = {}) {
-  const modal = document.getElementById("modal-edit");
-  modalContext = { type, data };
-  modal.setAttribute("aria-hidden", "false");
+export function openModal({ title, bodyHTML, onSave }) {
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-body").innerHTML = bodyHTML;
+  modalContext = { onSave };
+  document.getElementById("modal-edit").setAttribute("aria-hidden", "false");
 }
 
 export function closeModal() {
-  const modal = document.getElementById("modal-edit");
-  modal.setAttribute("aria-hidden", "true");
+  document.getElementById("modal-edit").setAttribute("aria-hidden", "true");
+  document.getElementById("modal-body").innerHTML = "";
   modalContext = null;
 }
-
-export { modalContext };

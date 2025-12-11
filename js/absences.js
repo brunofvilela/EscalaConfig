@@ -1,52 +1,73 @@
-import { db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy } from "./firebase.js";
+import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 
-const absenceContainer = document.getElementById("tab-ausencias");
-const absencesCol = collection(db, "absences");
+const absenceList = document.getElementById("absence-list");
+const selectTech = document.getElementById("absence-tech");
+const inputStart = document.getElementById("absence-start");
+const inputEnd = document.getElementById("absence-end");
+const inputReason = document.getElementById("absence-reason");
+const btnAdd = document.getElementById("btn-add-absence");
+
+const absCol = collection(db, "absences");
+const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
-  await renderAbsences();
+  btnAdd.addEventListener("click", addAbsence);
+  await loadAbsences();
 }
 
-export async function loadAbsencesRaw() {
-  const q = query(absencesCol, orderBy("start", "desc"));
+async function loadAbsencesRaw() {
+  const q = query(absCol, orderBy("start", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-async function renderAbsences() {
-  const absences = await loadAbsencesRaw();
-  absenceContainer.innerHTML = "";
-  for (const a of absences) {
+async function loadAbsences() {
+  const arr = await loadAbsencesRaw();
+  absenceList.innerHTML = "";
+  arr.forEach(a => {
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
       <div class="left">
-        <div><strong>${escapeHtml(a.tech)}</strong></div>
-        <div class="meta">${escapeHtml(a.start)} → ${escapeHtml(a.end)} — ${escapeHtml(a.reason)}</div>
+        <strong>${escapeHtml(a.tech)}</strong>
+        <span class="meta">${a.start} → ${a.end} — ${escapeHtml(a.reason || "")}</span>
       </div>
       <div class="actions">
-        <button class="btn-delete-absence">🗑️</button>
+        <button class="btn-delete">🗑️</button>
       </div>
     `;
-    const delBtn = div.querySelector(".btn-delete-absence");
-    delBtn.onclick = async () => {
-      if (!confirm("Excluir ausência?")) return;
+    div.querySelector(".btn-delete").onclick = async () => {
       await deleteDoc(doc(db, "absences", a.id));
-      await renderAbsences();
+      await loadAbsences();
     };
-    absenceContainer.appendChild(div);
-  }
+    absenceList.appendChild(div);
+  });
 }
 
-export async function addAbsence(techId, techName, start, end, reason = "") {
-  await addDoc(absencesCol, {
+async function addAbsence() {
+  const techId = selectTech.value;
+  const start = inputStart.value;
+  const end = inputEnd.value;
+  const reason = inputReason.value.trim();
+
+  if (!techId || !start || !end) return alert("Preencha os campos obrigatórios.");
+
+  const techSnap = await getDocs(techsCol);
+  const tech = techSnap.docs.map(d => ({ id: d.id, ...d.data() })).find(t => t.id === techId);
+
+  await addDoc(absCol, {
     technicianId: techId,
-    tech: techName,
+    tech: tech?.name ?? "",
     start,
     end,
     reason,
     createdAt: new Date().toISOString()
   });
-  await renderAbsences();
+
+  inputStart.value = "";
+  inputEnd.value = "";
+  inputReason.value = "";
+
+  await loadAbsences();
 }
