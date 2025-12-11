@@ -138,3 +138,4 @@ async function loadTechnicians() {
       techList.appendChild(div);
     });
 }
+export { loadTechnicians };
