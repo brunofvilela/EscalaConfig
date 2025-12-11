@@ -59,7 +59,15 @@ async function loadTechnicians() {
 
   // renderizar lista
   techList.innerHTML = "";
-  techs.forEach(t => {
+  // ordenar alfabeticamente por nome (sem acentos)
+techs
+.sort((a, b) =>
+  a.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .localeCompare(
+      b.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    )
+)
+.forEach(t => {
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
@@ -76,9 +84,27 @@ async function loadTechnicians() {
     // excluir
     div.querySelector(".btn-delete").onclick = async () => {
       if (!confirm("Excluir técnico?")) return;
+    
+      // 1) excluir técnico atual
       await deleteDoc(doc(db, "technicians", t.id));
+    
+      // 2) carregar novamente todos os técnicos
+      const allTechs = await loadTechniciansRaw();
+    
+      // 3) selecionar os que precisam ajustar ordem
+      const toUpdate = allTechs.filter(x => x.order > t.order);
+    
+      // 4) reduzir ordem em -1
+      for (const tech of toUpdate) {
+        await updateDoc(doc(db, "technicians", tech.id), {
+          order: tech.order - 1
+        });
+      }
+    
+      // 5) recarregar lista
       await loadTechnicians();
     };
+    
 
     // editar nome (inline)
     div.querySelector(".btn-edit").onclick = async () => {
