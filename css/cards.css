@@ -42,10 +42,12 @@
   .btn-edit { background: #f3f4f6; }
   .btn-delete { background: #fee2e2; color: #991b1b; }
   .badge {
-    padding: 6px 8px;
-    border-radius: 999px;
-    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 4px;
   }
   .badge-ativo { background: var(--green); color: white; }
   .badge-ausente { background: var(--red); color: white; }

@@ -9,10 +9,10 @@ const btnAdd = document.getElementById("btn-add-tech");
 const selectAbsTech = document.getElementById("absence-tech");
 
 const techsCol = collection(db, "technicians");
+const absCol = collection(db, "absences");
 
 export async function initTechnicians() {
   btnAdd.addEventListener("click", addTechnician);
-
   await loadTechnicians();
 }
 
@@ -45,10 +45,19 @@ export async function loadTechniciansRaw() {
   }));
 }
 
+async function loadAbsencesRaw() {
+  const q = query(absCol, orderBy("start", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 async function loadTechnicians() {
   const techs = await loadTechniciansRaw();
+  const abs = await loadAbsencesRaw();
 
-  // atualizar select da aba ausências
+  const hoje = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+
+  // Atualizar dropdown da aba ausência
   selectAbsTech.innerHTML = "";
   techs.forEach(t => {
     const opt = document.createElement("option");
@@ -57,67 +66,75 @@ async function loadTechnicians() {
     selectAbsTech.appendChild(opt);
   });
 
-  // renderizar lista
+  // Renderizar tecnicos (em ordem alfabética)
   techList.innerHTML = "";
-  // ordenar alfabeticamente por nome (sem acentos)
-techs
-.sort((a, b) =>
-  a.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .localeCompare(
-      b.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  techs
+    .sort((a, b) =>
+      a.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .localeCompare(
+          b.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        )
     )
-)
-.forEach(t => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <div class="left">
-        <strong>${escapeHtml(t.name)}</strong>
-        <span class="meta">Ordem: ${t.order}</span>
-      </div>
-      <div class="actions">
-        <button class="btn-edit">✏️</button>
-        <button class="btn-delete">🗑️</button>
-      </div>
-    `;
+    .forEach(t => {
+      // Verificar se técnico está ausente hoje
+      const estaAusente = abs.some(a =>
+        a.technicianId === t.id &&
+        a.start <= hoje &&
+        a.end >= hoje
+      );
 
-    // excluir
-    div.querySelector(".btn-delete").onclick = async () => {
-      if (!confirm("Excluir técnico?")) return;
-    
-      // 1) excluir técnico atual
-      await deleteDoc(doc(db, "technicians", t.id));
-    
-      // 2) carregar novamente todos os técnicos
-      const allTechs = await loadTechniciansRaw();
-    
-      // 3) selecionar os que precisam ajustar ordem
-      const toUpdate = allTechs.filter(x => x.order > t.order);
-    
-      // 4) reduzir ordem em -1
-      for (const tech of toUpdate) {
-        await updateDoc(doc(db, "technicians", tech.id), {
-          order: tech.order - 1
+      const statusLabel = estaAusente ? "AUSENTE" : "ATIVO";
+      const statusClass = estaAusente ? "badge-ausente" : "badge-ativo";
+
+      const div = document.createElement("div");
+      div.className = "item";
+
+      div.innerHTML = `
+        <div class="left">
+          <div>
+            <strong>${escapeHtml(t.name)}</strong>
+            <div class="meta">Ordem: ${t.order}</div>
+            <div class="badge ${statusClass}">${statusLabel}</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-edit">✏️</button>
+          <button class="btn-delete">🗑️</button>
+        </div>
+      `;
+
+      // Excluir técnico
+      div.querySelector(".btn-delete").onclick = async () => {
+        if (!confirm("Excluir técnico?")) return;
+
+        await deleteDoc(doc(db, "technicians", t.id));
+
+        // Reordenar técnicos > ordem removida
+        const allTechs = await loadTechniciansRaw();
+        const toUpdate = allTechs.filter(x => x.order > t.order);
+
+        for (const tech of toUpdate) {
+          await updateDoc(doc(db, "technicians", tech.id), {
+            order: tech.order - 1
+          });
+        }
+
+        await loadTechnicians();
+      };
+
+      // Editar nome
+      div.querySelector(".btn-edit").onclick = async () => {
+        const novoNome = prompt("Novo nome do técnico:", t.name);
+        if (!novoNome) return;
+
+        await updateDoc(doc(db, "technicians", t.id), {
+          name: novoNome.trim()
         });
-      }
-    
-      // 5) recarregar lista
-      await loadTechnicians();
-    };
-    
 
-    // editar nome (inline)
-    div.querySelector(".btn-edit").onclick = async () => {
-      const novoNome = prompt("Novo nome do técnico:", t.name);
-      if (!novoNome) return;
+        await loadTechnicians();
+      };
 
-      await updateDoc(doc(db, "technicians", t.id), {
-        name: novoNome.trim()
-      });
-
-      await loadTechnicians();
-    };
-
-    techList.appendChild(div);
-  });
+      techList.appendChild(div);
+    });
 }
