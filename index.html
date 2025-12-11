@@ -18,13 +18,66 @@
 
   <main class="container">
     <!-- TÉCNICOS -->
-    <section id="tab-tecnicos" class="tab active"></section>
+    <section id="tab-tecnicos" class="tab active">
+
+      <div class="card">
+        <h2>Gerenciar Técnicos</h2>
+        <div class="row">
+          <input id="tech-name" placeholder="Nome do técnico" />
+          <input id="tech-order" type="number" placeholder="Ordem (ex: 1)" />
+          <button id="btn-add-tech" class="primary">Adicionar</button>
+        </div>
+        <p class="muted">O status é calculado automaticamente.</p>
+      </div>
+    
+      <div class="card">
+        <h3>Lista de Técnicos</h3>
+        <div id="technician-list" class="list"></div>
+      </div>
+    
+    </section>    
 
     <!-- TAREFAS -->
-    <section id="tab-tarefas" class="tab"></section>
+    <section id="tab-tarefas" class="tab">
+
+      <div class="card">
+        <h2>Incluir Tarefa</h2>
+        <div class="row">
+          <input id="task-activity" placeholder="Descrição da atividade" />
+          <button id="btn-add-task" class="primary">Incluir Tarefa</button>
+        </div>
+        <p class="muted">Técnicos AUSENTES não recebem tarefas.</p>
+      </div>
+    
+      <div class="card">
+        <h3>Últimas Tarefas</h3>
+        <div id="task-list" class="list"></div>
+      </div>
+    
+    </section>
+    
 
     <!-- AUSÊNCIAS -->
-    <section id="tab-ausencias" class="tab"></section>
+    <section id="tab-ausencias" class="tab">
+
+      <div class="card">
+        <h2>Registrar Ausência</h2>
+        <div class="row">
+          <select id="absence-tech"></select>
+          <input id="absence-start" type="date" />
+          <input id="absence-end" type="date" />
+          <input id="absence-reason" placeholder="Motivo (opcional)" />
+          <button id="btn-add-absence" class="primary">Registrar</button>
+        </div>
+      </div>
+    
+      <div class="card">
+        <h3>Histórico de Ausências</h3>
+        <div id="absence-list" class="list"></div>
+      </div>
+    
+    </section>
+    
   </main>
 
   <!-- MODAL EDITAR -->
