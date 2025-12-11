@@ -47,21 +47,39 @@ async function addTask() {
   const activity = inputActivity.value.trim();
   if (!activity) return alert("Digite a atividade.");
 
+  // carregar técnicos
   const techSnap = await getDocs(techsCol);
   const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   const active = techs.sort((a, b) => a.order - b.order);
 
-  if (!active.length) return alert("Nenhum técnico disponível.");
+  // carregar ausências
+  const hoje = new Date().toISOString().slice(0, 10);
+  const absSnap = await getDocs(collection(db, "absences"));
+  const ausentes = absSnap.docs.map(d => ({ id: d.data().technicianId, ...d.data() }));
 
+  // filtrar técnicos disponíveis
+  const ativos = active.filter(t =>
+    !ausentes.some(a => 
+      a.technicianId === t.id &&
+      a.start <= hoje &&
+      a.end >= hoje
+    )
+  );
+
+  if (ativos.length === 0) {
+    return alert("Nenhum técnico ativo disponível para receber tarefas.");
+  }
+
+  // rotacionar entre os técnicos ATIVOS
   const chosenIdx = await runTransaction(db, async tx => {
     const snap = await tx.get(metaDocRef);
     let idx = snap.exists() ? snap.data().tecnicoIndex ?? -1 : -1;
-    idx = (idx + 1) % active.length;
+    idx = (idx + 1) % ativos.length;
     tx.set(metaDocRef, { tecnicoIndex: idx });
     return idx;
   });
 
-  const chosen = active[chosenIdx];
+  const chosen = ativos[chosenIdx];
 
   const now = new Date();
   await addDoc(tasksCol, {
@@ -75,3 +93,4 @@ async function addTask() {
   inputActivity.value = "";
   await loadTasks();
 }
+

@@ -1,5 +1,6 @@
 import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
+import { loadTechnicians } from "./technicians.js";
 
 const absenceList = document.getElementById("absence-list");
 const selectTech = document.getElementById("absence-tech");
@@ -64,10 +65,11 @@ async function addAbsence() {
     reason,
     createdAt: new Date().toISOString()
   });
-
+  
   inputStart.value = "";
   inputEnd.value = "";
   inputReason.value = "";
-
+  
   await loadAbsences();
+  await loadTechnicians();  // ATUALIZA STATUS NA HORA  
 }
