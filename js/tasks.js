@@ -52,6 +52,10 @@ async function addTask() {
   const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   const hoje = new Date().toISOString().slice(0, 10);
 
+  // carregar ausências
+const absSnap = await getDocs(collection(db, "absences"));
+const absences = absSnap.docs.map(d => d.data());
+
 const active = techs
   .filter(t =>
     !absences.some(a =>
@@ -66,11 +70,6 @@ if (active.length === 0) {
   alert("Nenhum técnico ATIVO disponível.");
   return;
 }
-
-
-  // carregar ausências
-  const absSnap = await getDocs(collection(db, "absences"));
-  const ausentes = absSnap.docs.map(d => ({ id: d.data().technicianId, ...d.data() }));
 
   // filtrar técnicos disponíveis
   const ativos = active.filter(t =>
