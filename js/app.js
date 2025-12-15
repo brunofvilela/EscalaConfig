@@ -23,7 +23,6 @@ tabButtons.forEach(btn => {
   });
 });
 
-
 // init global
 initModal();
 initTabs();
