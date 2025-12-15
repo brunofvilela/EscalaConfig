@@ -1,5 +1,16 @@
-import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, limit, runTransaction } from "./firebase.js";
-import { escapeHtml, todayISO } from "./utils.js";
+import {
+  db,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  limit,
+  runTransaction
+} from "./firebase.js";
+import { escapeHtml } from "./utils.js";
 
 const taskList = document.getElementById("task-list");
 const inputActivity = document.getElementById("task-activity");
@@ -7,6 +18,7 @@ const btnAddTask = document.getElementById("btn-add-task");
 
 const tasksCol = collection(db, "tasks");
 const techsCol = collection(db, "technicians");
+const absCol = collection(db, "absences");
 const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
@@ -23,6 +35,7 @@ async function loadTasksRaw() {
 async function loadTasks() {
   const arr = await loadTasksRaw();
   taskList.innerHTML = "";
+
   arr.forEach(t => {
     const div = document.createElement("div");
     div.className = "item";
@@ -32,13 +45,15 @@ async function loadTasks() {
         <span class="meta">${t.technicianName} — ${t.displayTS}</span>
       </div>
       <div class="actions">
-        <button class="btn-delete" data-id="${t.id}">🗑️</button>
+        <button class="btn-delete">🗑️</button>
       </div>
     `;
+
     div.querySelector(".btn-delete").onclick = async () => {
       await deleteDoc(doc(db, "tasks", t.id));
       await loadTasks();
     };
+
     taskList.appendChild(div);
   });
 }
@@ -50,59 +65,48 @@ async function addTask() {
   // carregar técnicos
   const techSnap = await getDocs(techsCol);
   const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-  const hoje = new Date().toISOString().slice(0, 10);
 
   // carregar ausências
-const absSnap = await getDocs(collection(db, "absences"));
-const absences = absSnap.docs.map(d => d.data());
+  const absSnap = await getDocs(absCol);
+  const absences = absSnap.docs.map(d => d.data());
 
-const active = techs
-  .filter(t =>
-    !absences.some(a =>
-      a.technicianId === t.id &&
-      a.start <= hoje &&
-      a.end >= hoje
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  // técnicos ATIVOS ordenados
+  const active = techs
+    .filter(t =>
+      !absences.some(a =>
+        a.technicianId === t.id &&
+        a.start <= hoje &&
+        a.end >= hoje
+      )
     )
-  )
-  .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.order - b.order);
 
-if (active.length === 0) {
-  alert("Nenhum técnico ATIVO disponível.");
-  return;
-}
-
-  // filtrar técnicos disponíveis
-  const ativos = active.filter(t =>
-    !absences.some(a => 
-      a.technicianId === t.id &&
-      a.start <= hoje &&
-      a.end >= hoje
-    )
-  );
-
-  if (ativos.length === 0) {
-    return alert("Nenhum técnico ativo disponível para receber tarefas.");
+  if (active.length === 0) {
+    return alert("Nenhum técnico ATIVO disponível.");
   }
 
-  // rotacionar entre os técnicos ATIVOS
-  const chosenIdx = await runTransaction(db, async (tx) => {
+  // 🔁 ROTATION ROBUSTA (por ID, não por índice)
+  const chosen = await runTransaction(db, async (tx) => {
     const snap = await tx.get(metaDocRef);
-    let idx = -1;
-  
-    if (snap.exists()) {
-      idx = typeof snap.data().tecnicoIndex === "number"
-        ? snap.data().tecnicoIndex
-        : -1;
-    }
-  
-    const nextIdx = (idx + 1) % active.length;
-  
-    tx.set(metaDocRef, { tecnicoIndex: nextIdx });
-    return nextIdx;
-  });
-  
-  const chosen = active[chosenIdx];
+    const lastId = snap.exists() ? snap.data().lastTechnicianId : null;
 
+    let nextTech;
+
+    if (!lastId) {
+      nextTech = active[0];
+    } else {
+      const idx = active.findIndex(t => t.id === lastId);
+      nextTech =
+        idx === -1
+          ? active[0]
+          : active[(idx + 1) % active.length];
+    }
+
+    tx.set(metaDocRef, { lastTechnicianId: nextTech.id });
+    return nextTech;
+  });
 
   const now = new Date();
   await addDoc(tasksCol, {
@@ -116,4 +120,3 @@ if (active.length === 0) {
   inputActivity.value = "";
   await loadTasks();
 }
-
