@@ -23,6 +23,37 @@ export async function initAbsences() {
   await loadAbsences();
 }
 
+async function handleAdd() {
+  const absenceTechSelect = document.getElementById("absence-tech");
+  const absenceStartInput = document.getElementById("absence-start");
+  const absenceEndInput = document.getElementById("absence-end");
+  const absenceReasonInput = document.getElementById("absence-reason");
+
+  const techId = absenceTechSelect.value;
+  const start = absenceStartInput.value;
+  const end = absenceEndInput.value;
+  const reason = (absenceReasonInput.value || "").trim();
+
+  if (!techId || !start || !end) {
+    alert("Preencha técnico, data inicial e data final.");
+    return;
+  }
+
+  await addDoc(collection(db, "absences"), {
+    technicianId: techId,
+    start,
+    end,
+    reason,
+    createdAt: new Date().toISOString()
+  });
+
+  absenceStartInput.value = "";
+  absenceEndInput.value = "";
+  absenceReasonInput.value = "";
+
+  await loadAbsences(true);
+}
+
 async function loadAbsencesRaw() {
   const q = query(absCol, orderBy("start", "desc"));
   const snap = await getDocs(q);
