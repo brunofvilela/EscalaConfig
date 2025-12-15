@@ -1,4 +1,4 @@
-import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter } from "./firebase.js";
+import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 import { loadTechnicians } from "./technicians.js";
 
@@ -16,10 +16,11 @@ const absCol = collection(db, "absences");
 const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
-  btnAdd.addEventListener("click", addAbsence);
-  await loadAbsences(true);
-  document.getElementById("load-more-absences")
-  .addEventListener("click", () => loadAbsences());
+  const btnAddAbsence = document.getElementById("btn-add-absence");
+  if (!btnAddAbsence) return;
+
+  btnAddAbsence.addEventListener("click", handleAdd);
+  await loadAbsences();
 }
 
 async function loadAbsencesRaw() {
@@ -63,9 +64,24 @@ async function loadAbsences(reset = false) {
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
-      <strong>${a.tech}</strong>
-      <span class="meta">${a.start} → ${a.end}</span>
+      <div class="left">
+        <strong>${escapeHtml(a.tech)}</strong>
+        <span class="meta">
+          ${a.start} → ${a.end}
+          ${a.reason ? `— ${escapeHtml(a.reason)}` : ""}
+        </span>
+      </div>
+      <div class="actions">
+        <button class="btn-delete" title="Excluir ausência">🗑️</button>
+      </div>
     `;
+    
+    div.querySelector(".btn-delete").onclick = async () => {
+      if (!confirm("Excluir ausência?")) return;
+      await deleteDoc(doc(db, "absences", d.id));
+      await loadAbsences(true);
+    };    
+
     absenceList.appendChild(div);
   });
 

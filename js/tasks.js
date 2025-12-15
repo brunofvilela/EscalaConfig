@@ -6,7 +6,6 @@ let loadingTasks = false;
 
 const taskList = document.getElementById("task-list");
 const inputActivity = document.getElementById("task-activity");
-const btnAddTask = document.getElementById("btn-add-task");
 
 const tasksCol = collection(db, "tasks");
 const techsCol = collection(db, "technicians");
@@ -14,10 +13,11 @@ const absCol = collection(db, "absences");
 const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
+  const btnAddTask = document.getElementById("btn-add-task");
+  if (!btnAddTask) return; // 👈 evita erro
+
   btnAddTask.addEventListener("click", addTask);
-  await loadTasks(true);
-  document.getElementById("load-more-tasks")
-  .addEventListener("click", () => loadTasks());
+  await loadTasks();
 }
 
 async function loadTasksRaw() {
