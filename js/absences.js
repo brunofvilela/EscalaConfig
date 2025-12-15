@@ -33,6 +33,18 @@ async function handleAdd() {
   const start = absenceStartInput.value;
   const end = absenceEndInput.value;
   const reason = (absenceReasonInput.value || "").trim();
+  const snap = await getDocs(collection(db, "absences"));
+  const existentes = snap.docs.map(d => d.data());
+
+  const conflito = existentes.some(a =>
+    a.technicianId === techId &&
+    !(end < a.start || start > a.end)
+  );
+
+  if (conflito) {
+    alert("Este técnico já possui uma ausência nesse período.");
+    return;
+  }
 
   if (!techId || !start || !end) {
     alert("Preencha técnico, data inicial e data final.");
@@ -41,11 +53,13 @@ async function handleAdd() {
 
   await addDoc(collection(db, "absences"), {
     technicianId: techId,
+    technicianName: tech.name, // 👈 IMPORTANTE
     start,
     end,
     reason,
     createdAt: new Date().toISOString()
   });
+  
 
   absenceStartInput.value = "";
   absenceEndInput.value = "";
@@ -96,7 +110,7 @@ async function loadAbsences(reset = false) {
     div.className = "item";
     div.innerHTML = `
       <div class="left">
-        <strong>${escapeHtml(a.tech)}</strong>
+        <strong>${escapeHtml(a.technicianName)}</strong>
         <span class="meta">
           ${a.start} → ${a.end}
           ${a.reason ? `— ${escapeHtml(a.reason)}` : ""}
