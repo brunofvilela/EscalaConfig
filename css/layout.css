@@ -41,3 +41,10 @@
     font-weight: bold;
   }
   
+  button.primary {
+    background: #2563eb;
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 14px;
+  }
+  
