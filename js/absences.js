@@ -1,4 +1,4 @@
-import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "./firebase.js";
+import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 import { loadTechnicians } from "./technicians.js";
 

@@ -1,15 +1,4 @@
-import {
-  db,
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  query,
-  orderBy,
-  limit,
-  runTransaction
-} from "./firebase.js";
+import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 
 let lastTaskDoc = null;
