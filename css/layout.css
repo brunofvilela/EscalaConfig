@@ -23,3 +23,21 @@
     padding: 0 18px;
   }
   
+  .tab {
+    display: none;
+  }
+  
+  .tab.active {
+    display: block;
+  }
+  
+  .tabs .tabBtn {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  
+  .tabs .tabBtn.active {
+    opacity: 1;
+    font-weight: bold;
+  }
+  
