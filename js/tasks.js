@@ -83,9 +83,9 @@ async function loadTasks(reset = false) {
       // 🔁 "volta" a rotação para esse técnico
       await setDoc(
         doc(db, "meta", "rotation"),
-        { lastTechnicianId: removedTechnicianId },
+        { forceNextTechnicianId: removedTechnicianId },
         { merge: true }
-      );
+      );      
     
       await loadTasks(true);
     };    
@@ -129,30 +129,50 @@ async function addTask() {
   // 🔁 ROTATION ROBUSTA (por ID, não por índice)
   const chosen = await runTransaction(db, async (tx) => {
     const snap = await tx.get(metaDocRef);
-    const lastId = snap.exists() ? snap.data().lastTechnicianId : null;
+    const data = snap.exists() ? snap.data() : {};
+    const forceId = data.forceNextTechnicianId || null;
+    const lastId = data.lastTechnicianId || null;
 
     let nextTech;
 
-    if (!lastId) {
+    if (forceId) {
+      nextTech = active.find(t => t.id === forceId);
+    
+      // se técnico está ausente ou não existe mais
+      if (!nextTech) {
+        nextTech = active[0];
+      }
+    
+      // consome o override
+      tx.set(
+        metaDocRef,
+        {
+          lastTechnicianId: nextTech.id,
+          forceNextTechnicianId: null
+        },
+        { merge: true }
+      );
+    
+      return nextTech;
+    }if (!lastId) {
       nextTech = active[0];
     } else {
       const idx = active.findIndex(t => t.id === lastId);
+    
       if (idx !== -1) {
         nextTech = active[(idx + 1) % active.length];
       } else {
-        // last está ausente → continuar pela ordem original
         const lastTech = techs.find(t => t.id === lastId);
-        if (!lastTech) {
-          nextTech = active[0];
-        } else {
-          const nextByOrder = active.find(t => t.order > lastTech.order);
-          nextTech = nextByOrder ?? active[0];
-        }
+        const nextByOrder = lastTech
+          ? active.find(t => t.order > lastTech.order)
+          : null;
+        nextTech = nextByOrder ?? active[0];
       }
     }
-
-    tx.set(metaDocRef, { lastTechnicianId: nextTech.id });
+    
+    tx.set(metaDocRef, { lastTechnicianId: nextTech.id }, { merge: true });
     return nextTech;
+    
   });
 
   const now = new Date();
