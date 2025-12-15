@@ -12,6 +12,9 @@ import {
 } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 
+let lastTaskDoc = null;
+let loadingTasks = false;
+
 const taskList = document.getElementById("task-list");
 const inputActivity = document.getElementById("task-activity");
 const btnAddTask = document.getElementById("btn-add-task");
@@ -23,7 +26,9 @@ const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
   btnAddTask.addEventListener("click", addTask);
-  await loadTasks();
+  await loadTasks(true);
+  document.getElementById("load-more-tasks")
+  .addEventListener("click", () => loadTasks());
 }
 
 async function loadTasksRaw() {
@@ -32,11 +37,38 @@ async function loadTasksRaw() {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-async function loadTasks() {
-  const arr = await loadTasksRaw();
-  taskList.innerHTML = "";
+async function loadTasks(reset = false) {
+  if (loadingTasks) return;
+  loadingTasks = true;
 
-  arr.forEach(t => {
+  if (reset) {
+    taskList.innerHTML = "";
+    lastTaskDoc = null;
+  }
+
+  let q = query(
+    tasksCol,
+    orderBy("timestamp", "desc"),
+    limit(20)
+  );
+
+  if (lastTaskDoc) {
+    q = query(
+      tasksCol,
+      orderBy("timestamp", "desc"),
+      startAfter(lastTaskDoc),
+      limit(20)
+    );
+  }
+
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    lastTaskDoc = snap.docs[snap.docs.length - 1];
+  }
+
+  snap.docs.forEach(d => {
+    const t = d.data();
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
@@ -44,19 +76,13 @@ async function loadTasks() {
         <strong>${escapeHtml(t.activity)}</strong>
         <span class="meta">${t.technicianName} — ${t.displayTS}</span>
       </div>
-      <div class="actions">
-        <button class="btn-delete">🗑️</button>
-      </div>
     `;
-
-    div.querySelector(".btn-delete").onclick = async () => {
-      await deleteDoc(doc(db, "tasks", t.id));
-      await loadTasks();
-    };
-
     taskList.appendChild(div);
   });
+
+  loadingTasks = false;
 }
+
 
 async function addTask() {
   const activity = inputActivity.value.trim();
@@ -126,5 +152,5 @@ async function addTask() {
   });
 
   inputActivity.value = "";
-  await loadTasks();
+  await loadTasks(true);
 }

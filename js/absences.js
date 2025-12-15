@@ -9,12 +9,17 @@ const inputEnd = document.getElementById("absence-end");
 const inputReason = document.getElementById("absence-reason");
 const btnAdd = document.getElementById("btn-add-absence");
 
+let lastAbsDoc = null;
+let loadingAbs = false;
+
 const absCol = collection(db, "absences");
 const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
   btnAdd.addEventListener("click", addAbsence);
-  await loadAbsences();
+  await loadAbsences(true);
+  document.getElementById("load-more-absences")
+  .addEventListener("click", () => loadAbsences());
 }
 
 async function loadAbsencesRaw() {
@@ -23,29 +28,50 @@ async function loadAbsencesRaw() {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-async function loadAbsences() {
-  const arr = await loadAbsencesRaw();
-  absenceList.innerHTML = "";
-  arr.forEach(a => {
+async function loadAbsences(reset = false) {
+  if (loadingAbs) return;
+  loadingAbs = true;
+
+  if (reset) {
+    absenceList.innerHTML = "";
+    lastAbsDoc = null;
+  }
+
+  let q = query(
+    absCol,
+    orderBy("start", "desc"),
+    limit(20)
+  );
+
+  if (lastAbsDoc) {
+    q = query(
+      absCol,
+      orderBy("start", "desc"),
+      startAfter(lastAbsDoc),
+      limit(20)
+    );
+  }
+
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    lastAbsDoc = snap.docs[snap.docs.length - 1];
+  }
+
+  snap.docs.forEach(d => {
+    const a = d.data();
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
-      <div class="left">
-        <strong>${escapeHtml(a.tech)}</strong>
-        <span class="meta">${a.start} → ${a.end} — ${escapeHtml(a.reason || "")}</span>
-      </div>
-      <div class="actions">
-        <button class="btn-delete">🗑️</button>
-      </div>
+      <strong>${a.tech}</strong>
+      <span class="meta">${a.start} → ${a.end}</span>
     `;
-    div.querySelector(".btn-delete").onclick = async () => {
-      await deleteDoc(doc(db, "absences", a.id));
-      await loadAbsences();
-      await loadTechnicians();
-    };
     absenceList.appendChild(div);
   });
+
+  loadingAbs = false;
 }
+
 
 async function addAbsence() {
   const techId = selectTech.value;
@@ -71,6 +97,6 @@ async function addAbsence() {
   inputEnd.value = "";
   inputReason.value = "";
   
-  await loadAbsences();
+  await loadAbsences(true);
   await loadTechnicians();  // ATUALIZA STATUS NA HORA  
 }
