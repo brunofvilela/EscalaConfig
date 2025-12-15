@@ -98,10 +98,18 @@ async function addTask() {
       nextTech = active[0];
     } else {
       const idx = active.findIndex(t => t.id === lastId);
-      nextTech =
-        idx === -1
-          ? active[0]
-          : active[(idx + 1) % active.length];
+      if (idx !== -1) {
+        nextTech = active[(idx + 1) % active.length];
+      } else {
+        // last está ausente → continuar pela ordem original
+        const lastTech = techs.find(t => t.id === lastId);
+        if (!lastTech) {
+          nextTech = active[0];
+        } else {
+          const nextByOrder = active.find(t => t.order > lastTech.order);
+          nextTech = nextByOrder ?? active[0];
+        }
+      }
     }
 
     tx.set(metaDocRef, { lastTechnicianId: nextTech.id });
