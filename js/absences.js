@@ -51,6 +51,15 @@ async function handleAdd() {
     return;
   }
 
+  const techSnap = await getDocs(collection(db, "technicians"));
+  const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const tech = techs.find(t => t.id === techId);
+
+  if (!tech) {
+    alert("Técnico não encontrado.");
+    return;
+  }
+
   await addDoc(collection(db, "absences"), {
     technicianId: techId,
     technicianName: tech.name, // 👈 IMPORTANTE
@@ -59,7 +68,6 @@ async function handleAdd() {
     reason,
     createdAt: new Date().toISOString()
   });
-  
 
   absenceStartInput.value = "";
   absenceEndInput.value = "";
