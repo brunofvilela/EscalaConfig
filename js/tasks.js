@@ -73,7 +73,7 @@ if (active.length === 0) {
 
   // filtrar técnicos disponíveis
   const ativos = active.filter(t =>
-    !ausentes.some(a => 
+    !absences.some(a => 
       a.technicianId === t.id &&
       a.start <= hoje &&
       a.end >= hoje
