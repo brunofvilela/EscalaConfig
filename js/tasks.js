@@ -60,14 +60,25 @@ async function loadTasks(reset = false) {
     const t = d.data();
     const div = document.createElement("div");
     div.className = "item";
+  
     div.innerHTML = `
       <div class="left">
         <strong>${escapeHtml(t.activity)}</strong>
         <span class="meta">${t.technicianName} — ${t.displayTS}</span>
       </div>
+      <div class="actions">
+        <button class="btn-delete" title="Excluir tarefa">🗑️</button>
+      </div>
     `;
+  
+    div.querySelector(".btn-delete").onclick = async () => {
+      if (!confirm("Excluir tarefa?")) return;
+      await deleteDoc(doc(db, "tasks", d.id));
+      await loadTasks(true);
+    };
+  
     taskList.appendChild(div);
-  });
+  });  
 
   loadingTasks = false;
 }
