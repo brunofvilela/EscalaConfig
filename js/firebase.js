@@ -12,6 +12,7 @@ import {
   limit,
   getDoc,
   setDoc,
+  startAfter,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -41,5 +42,6 @@ export {
   limit,
   getDoc,
   setDoc,
+  startAfter,
   runTransaction
 };
