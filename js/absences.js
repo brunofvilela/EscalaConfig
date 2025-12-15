@@ -41,6 +41,7 @@ async function loadAbsences() {
     div.querySelector(".btn-delete").onclick = async () => {
       await deleteDoc(doc(db, "absences", a.id));
       await loadAbsences();
+      await loadTechnicians();
     };
     absenceList.appendChild(div);
   });
