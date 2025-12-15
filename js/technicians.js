@@ -51,7 +51,7 @@ async function loadAbsencesRaw() {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-async function loadTechnicians() {
+export async function loadTechnicians() {
   const techs = await loadTechniciansRaw();
   const abs = await loadAbsencesRaw();
 

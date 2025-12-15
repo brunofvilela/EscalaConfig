@@ -74,6 +74,7 @@ async function handleAdd() {
   absenceReasonInput.value = "";
 
   await loadAbsences(true);
+  await loadTechnicians();
 }
 
 async function loadAbsencesRaw() {
@@ -132,6 +133,7 @@ async function loadAbsences(reset = false) {
     div.querySelector(".btn-delete").onclick = async () => {
       if (!confirm("Excluir ausência?")) return;
       await deleteDoc(doc(db, "absences", d.id));
+      await loadTechnicians();
       await loadAbsences(true);
     };    
 
