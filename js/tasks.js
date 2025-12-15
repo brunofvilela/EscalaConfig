@@ -1,4 +1,4 @@
-import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc } from "./firebase.js";
+import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc, setDoc } from "./firebase.js";
 import { escapeHtml } from "./utils.js";
 
 let lastTaskDoc = null;
@@ -73,9 +73,22 @@ async function loadTasks(reset = false) {
   
     div.querySelector(".btn-delete").onclick = async () => {
       if (!confirm("Excluir tarefa?")) return;
+    
+      // 🔑 técnico da tarefa excluída
+      const removedTechnicianId = t.technicianId;
+    
+      // remove a tarefa
       await deleteDoc(doc(db, "tasks", d.id));
+    
+      // 🔁 "volta" a rotação para esse técnico
+      await setDoc(
+        doc(db, "meta", "rotation"),
+        { lastTechnicianId: removedTechnicianId },
+        { merge: true }
+      );
+    
       await loadTasks(true);
-    };
+    };    
   
     taskList.appendChild(div);
   });  
