@@ -20,4 +20,12 @@ Você pode visualizar o projeto hospedado no link abaixo:
 - [Projeto hospedado](https://brunofvilela.github.io/EscalaConfig/)
 
 ## 🖱️ Antes e depois:
-![Demo](./images/Tarefas_Antes.png)
+
+Tarefas: 
+![Demo](./images/tarefas_antes.png)
+![Demo](./images/tarefas_depois.png)
+
+Técnicos + Ausencias
+![Demo](./images/tecnicos_ausencias_antes.png)
+![Demo](./images/ausencias_depois.png)
+![Demo](./images/tecnicos_depois.png)
