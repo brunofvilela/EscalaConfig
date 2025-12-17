@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="login-page">
+
+  <div class="login-card">
+    <h2>Painel de Escala</h2>
+    <button id="btn-login" class="primary">
+      Entrar com Google
+    </button>
+  </div>
+
+  <script type="module">
+    import { loginWithGoogle } from "./js/auth.js";
+
+    document
+      .getElementById("btn-login")
+      .addEventListener("click", loginWithGoogle);
+  </script>
+
+</body>
+</html>

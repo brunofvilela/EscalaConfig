@@ -13,6 +13,13 @@
       <button class="tabBtn" data-tab="tab-tecnicos">Técnicos</button>
       <button class="tabBtn active" data-tab="tab-tarefas">Tarefas</button>
       <button class="tabBtn" data-tab="tab-ausencias">Ausências</button>
+      
+      <button id="btn-logout">Sair</button>
+      <script type="module">
+        import { logout } from "./js/auth.js";
+        document.getElementById("btn-logout").onclick = logout;
+      </script>
+
     </nav>
   </header>
 
@@ -98,5 +105,10 @@
   </div>
 
   <script type="module" src="js/app.js"></script>
+  <script type="module">
+    import { protectPage } from "./js/auth.js";
+    protectPage();
+  </script>
+  
 </body>
 </html>
