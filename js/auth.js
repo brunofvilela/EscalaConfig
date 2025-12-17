@@ -2,14 +2,16 @@ import {
   auth,
   googleProvider,
   signInWithRedirect,
-  signOut,
   onAuthStateChanged
 } from "./firebase.js";
-  
-  /* LOGIN */
-  export async function loginWithGoogle() {
-    await signInWithRedirect(auth, googleProvider);
-  }
+
+export function loginWithGoogle() {
+  return signInWithRedirect(auth, googleProvider);
+}
+
+export function observeAuth(callback) {
+  onAuthStateChanged(auth, callback);
+}
   
   /* LOGOUT */
   export async function logout() {

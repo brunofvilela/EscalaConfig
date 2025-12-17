@@ -28,7 +28,7 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
-  authDomain: "brunofvilela.github.io",
+  authDomain: "escalaconfig.firebaseapp.com",
   projectId: "escalaconfig",
   storageBucket: "escalaconfig.firebasestorage.app",
   messagingSenderId: "393446307606",
@@ -40,15 +40,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-
-export {
-  auth,
-  googleProvider,
-  signInWithPopup,
-  signInWithRedirect, // 👈 adicionar
-  signOut,
-  onAuthStateChanged
-};
 
 export {
   db,
@@ -64,5 +55,11 @@ export {
   getDoc,
   setDoc,
   startAfter,
-  runTransaction
+  runTransaction,
+  auth,
+  googleProvider,
+  signInWithPopup,
+  signInWithRedirect, // 👈 adicionar
+  signOut,
+  onAuthStateChanged
 };
