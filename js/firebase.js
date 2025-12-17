@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -15,17 +16,19 @@ import {
   startAfter,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect, // 👈 adicionar
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
-
+// 🔧 CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyAVYJ0l4XDFn5qXkid75LI7iggX3FlxGS8",
   authDomain: "escalaconfig.firebaseapp.com",
@@ -36,12 +39,18 @@ const firebaseConfig = {
   measurementId: "G-160CC381TP"
 };
 
+// 🔥 INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// 🔐 AUTH
 const auth = getAuth(app);
+await setPersistence(auth, browserLocalPersistence);
 const googleProvider = new GoogleAuthProvider();
 
+// 📦 EXPORTS
 export {
+  // firestore
   db,
   collection,
   addDoc,
@@ -56,10 +65,11 @@ export {
   setDoc,
   startAfter,
   runTransaction,
+
+  // auth
   auth,
   googleProvider,
   signInWithPopup,
-  signInWithRedirect, // 👈 adicionar
   signOut,
   onAuthStateChanged
 };

@@ -48,3 +48,35 @@
     padding: 8px 14px;
   }
   
+  /* =====================
+   BOTÃO SAIR
+===================== */
+#btn-logout {
+  margin-left: auto;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+#btn-logout:hover {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+/* Clique */
+#btn-logout:active {
+  transform: scale(0.96);
+}
+
+/* Foco (acessibilidade) */
+#btn-logout:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+}

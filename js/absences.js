@@ -1,6 +1,6 @@
-import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc } from "./firebase.js";
-import { escapeHtml } from "./utils.js";
-import { loadTechnicians } from "./technicians.js";
+import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc } from "/js/firebase.js";
+import { escapeHtml } from "/js/utils.js";
+import { loadTechnicians } from "/js/technicians.js";
 
 const absenceList = document.getElementById("absence-list");
 const selectTech = document.getElementById("absence-tech");

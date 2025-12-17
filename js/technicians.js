@@ -1,7 +1,7 @@
 import { 
   db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy 
-} from "./firebase.js";
-import { escapeHtml } from "./utils.js";
+} from "/js/firebase.js";
+import { escapeHtml } from "/js/utils.js";
 
 const techList = document.getElementById("technician-list");
 const nameInput = document.getElementById("tech-name");

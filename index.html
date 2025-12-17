@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Painel de Escala — Técnicos · Tarefas · Ausências</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <header class="topbar">
@@ -16,7 +16,7 @@
       
       <button id="btn-logout">Sair</button>
       <script type="module">
-        import { logout } from "./js/auth.js";
+        import { logout } from "/js/auth.js";
         document.getElementById("btn-logout").onclick = logout;
       </script>
 
@@ -104,11 +104,7 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js"></script>
-  <script type="module">
-    import { protectPage } from "./js/auth.js";
-    protectPage();
-  </script>
+  <script type="module" src="/js/app.js"></script>
   
 </body>
 </html>

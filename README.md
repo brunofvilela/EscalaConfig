@@ -11,13 +11,12 @@ Esse projeto foi desenvolvido com as seguintes tecnologias:
 - [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 - [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 - [Firebase](https://firebase.google.com/)
-- [GitHub Pages](https://docs.github.com/pt/pages)
 
 ## 🖱️ Layout
 
 Você pode visualizar o projeto hospedado no link abaixo:
 
-- [Projeto hospedado](https://brunofvilela.github.io/EscalaConfig/)
+- [Projeto hospedado](https://escalaconfig.web.app)
 
 ## 🖱️ Antes e depois:
 

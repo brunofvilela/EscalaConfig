@@ -1,33 +1,23 @@
-import { initModal } from "./modal.js";
-import { initTabs } from "./utils.js";
-import { initTechnicians } from "./technicians.js";
-import { initTasks } from "./tasks.js";
-import { initAbsences } from "./absences.js";
+import { initModal } from "/js/modal.js";
+import { initTabs } from "/js/utils.js";
+import { initTechnicians } from "/js/technicians.js";
+import { initTasks } from "/js/tasks.js";
+import { initAbsences } from "/js/absences.js";
+import { observeAuth } from "/js/auth.js";
 
-// CONTROLE DAS ABAS (TÉCNICOS / TAREFAS / AUSÊNCIAS)
-const tabButtons = document.querySelectorAll(".tabBtn");
-const tabs = document.querySelectorAll(".tab");
+observeAuth(user => {
+  if (!user) {
+    window.location.replace("/login.html");
+    return;
+  }
 
-tabButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    // remover active de todos os botões
-    tabButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+  console.log("✅ Usuário logado:", user.email);
 
-    // esconder todas as abas
-    tabs.forEach(t => t.classList.remove("active"));
-
-    // mostrar aba selecionada
-    const tabId = btn.dataset.tab;
-    document.getElementById(tabId).classList.add("active");
-  });
+  initModal();
+  initTabs();
+  initTechnicians();
+  initTasks();
+  initAbsences();
 });
 
-// init global
-initModal();
-initTabs();
 
-// init modules
-initTechnicians();
-initTasks();
-initAbsences();

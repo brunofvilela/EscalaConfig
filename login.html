@@ -1,26 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login</title>
-  <link rel="stylesheet" href="css/style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login • Painel de Escala</title>
+<link rel="stylesheet" href="/css/style.css" />
 </head>
 <body class="login-page">
 
-  <div class="login-card">
-    <h2>Painel de Escala</h2>
-    <button id="btn-login" class="primary">
-      Entrar com Google
-    </button>
-  </div>
 
-  <script type="module">
-    import { loginWithGoogle } from "./js/auth.js";
+<div class="login-card">
+<h1>Painel de Escala</h1>
+<p class="subtitle">Acesse com sua conta Google</p>
 
-    document
-      .getElementById("btn-login")
-      .addEventListener("click", loginWithGoogle);
-  </script>
+
+<button id="btn-login" class="google-btn">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+Entrar com Google
+</button>
+</div>
+
+
+<script type="module">
+import { loginWithGoogle, observeAuth } from "/js/auth.js";
+
+
+observeAuth(user => {
+if (user) {
+window.location.replace("/index.html");
+}
+});
+
+
+document
+.getElementById("btn-login")
+.addEventListener("click", loginWithGoogle);
+</script>
+
 
 </body>
 </html>

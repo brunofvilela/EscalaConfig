@@ -1,34 +1,25 @@
 import {
   auth,
   googleProvider,
-  signInWithRedirect,
+  signInWithPopup,
+  signOut,
   onAuthStateChanged
-} from "./firebase.js";
+} from "/js/firebase.js";
 
+/* LOGIN */
 export function loginWithGoogle() {
-  return signInWithRedirect(auth, googleProvider);
+  return signInWithPopup(auth, googleProvider);
 }
 
-export function observeAuth(callback) {
-  onAuthStateChanged(auth, callback);
+/* LOGOUT */
+export function logout() {
+  return signOut(auth);
 }
-  
-  /* LOGOUT */
-  export async function logout() {
-    await signOut(auth);
-  }
-  
-  /* PROTEÇÃO DE ROTAS */
-  export function protectPage() {
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
-    });
-  }
-  
-  /* USUÁRIO ATUAL */
-  export function getCurrentUser(callback) {
-    onAuthStateChanged(auth, callback);
-  }
-  
+
+/* OBSERVA AUTH EM TEMPO REAL */
+export function observeAuth(callback) {
+  return onAuthStateChanged(auth, user => {
+    console.log("🔐 Auth mudou:", user);
+    callback(user);
+  });
+}
