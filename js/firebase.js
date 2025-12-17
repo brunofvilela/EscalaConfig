@@ -41,7 +41,7 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 export {
-  auth,
+  getAuth,
   googleProvider,
   signInWithPopup,
   signOut,
