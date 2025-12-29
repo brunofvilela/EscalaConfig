@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth.token.email in [
+    "eduardo.rodrigues@syonet.com",
+    "felipe.santos@syonet.com",
+    "marina.vieira@syonet.com",
+    "bruno.vilela@syonet.com"
+      ];
+    }
+
+    // 🔹 TASKS
+    match /tasks/{id} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow delete: if isLoggedIn();
+    }
+
+    // 🔹 ABSENCES
+    match /absences/{id} {
+      allow read: if isLoggedIn();
+      allow create, delete: if isAdmin();
+    }
+
+    // 🔹 TECHNICIANS
+    match /technicians/{id} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 🔹 META
+    match /meta/{id} {
+      allow read, write: if isLoggedIn();
+    }
+  }
+}

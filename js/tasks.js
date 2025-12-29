@@ -1,4 +1,4 @@
-import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc, setDoc } from "/js/firebase.js";
+import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc, setDoc, auth } from "/js/firebase.js";
 import { escapeHtml } from "/js/utils.js";
 
 let lastTaskDoc = null;
@@ -14,16 +14,18 @@ const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
   const btnAddTask = document.getElementById("btn-add-task");
-  if (!btnAddTask) return; // 👈 evita erro
+  const btnLoadMore = document.getElementById("btn-load-more-tasks");
+
+  if (!btnAddTask || !btnLoadMore) {
+    console.warn("⚠️ Botões de tarefa não encontrados");
+    return;
+  }
 
   btnAddTask.addEventListener("click", addTask);
-  await loadTasks();
-}
+  btnLoadMore.addEventListener("click", () => loadTasks());
 
-async function loadTasksRaw() {
-  const q = query(tasksCol, orderBy("timestamp", "desc"), limit(50));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // primeira carga
+  await loadTasks(true);
 }
 
 async function loadTasks(reset = false) {
@@ -176,13 +178,24 @@ async function addTask() {
   });
 
   const now = new Date();
+  const user = auth.currentUser;
+  if (!user) return alert("Usuário não autenticado.");
+  
   await addDoc(tasksCol, {
     activity,
     technicianId: chosen.id,
     technicianName: chosen.name,
     timestamp: now.toISOString(),
-    displayTS: now.toLocaleString()
+    displayTS: now.toLocaleString(),
+  
+    createdBy: {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName
+    },
+    createdAt: new Date().toISOString()
   });
+  
 
   inputActivity.value = "";
   await loadTasks(true);

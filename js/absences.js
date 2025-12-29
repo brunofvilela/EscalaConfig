@@ -1,6 +1,7 @@
-import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc } from "/js/firebase.js";
+import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc , auth} from "/js/firebase.js";
 import { escapeHtml } from "/js/utils.js";
 import { loadTechnicians } from "/js/technicians.js";
+import { isAdmin } from "/js/authz.js";
 
 const absenceList = document.getElementById("absence-list");
 const selectTech = document.getElementById("absence-tech");
@@ -16,8 +17,11 @@ const absCol = collection(db, "absences");
 const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
-  const btnAddAbsence = document.getElementById("btn-add-absence");
-  if (!btnAddAbsence) return;
+  const user = auth.currentUser;
+  if (!isAdmin(user)) {
+    document.getElementById("btn-add-absence").disabled = true;
+    return;
+  }
 
   btnAddAbsence.addEventListener("click", handleAdd);
   await loadAbsences();
@@ -60,14 +64,24 @@ async function handleAdd() {
     return;
   }
 
+  const user = auth.currentUser;
+  if (!user) return alert("Usuário não autenticado.");
+  
   await addDoc(collection(db, "absences"), {
     technicianId: techId,
-    technicianName: tech.name, // 👈 IMPORTANTE
+    technicianName: tech.name,
     start,
     end,
     reason,
+  
+    createdBy: {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName
+    },
     createdAt: new Date().toISOString()
   });
+  
 
   absenceStartInput.value = "";
   absenceEndInput.value = "";

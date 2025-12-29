@@ -19,6 +19,7 @@ import {
 
 import {
   getAuth,
+  auth,
   GoogleAuthProvider,
   signInWithPopup,
   signOut,

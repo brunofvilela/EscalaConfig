@@ -1,7 +1,8 @@
 import { 
-  db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy 
+  auth , db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy 
 } from "/js/firebase.js";
 import { escapeHtml } from "/js/utils.js";
+import { isAdmin } from "/js/authz.js";
 
 const techList = document.getElementById("technician-list");
 const nameInput = document.getElementById("tech-name");
@@ -12,6 +13,13 @@ const techsCol = collection(db, "technicians");
 const absCol = collection(db, "absences");
 
 export async function initTechnicians() {
+  const user = auth.currentUser;
+
+  if (!isAdmin(user)) {
+    document.getElementById("btn-add-tech").disabled = true;
+    return;
+  }
+
   btnAdd.addEventListener("click", addTechnician);
   await loadTechnicians();
 }
