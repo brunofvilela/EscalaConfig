@@ -1,20 +1,14 @@
 import { db, collection, addDoc, getDocs, query, orderBy, limit, startAfter, deleteDoc, doc , auth} from "/js/firebase.js";
-import { escapeHtml } from "/js/utils.js";
+import { escapeHtml,showNoPermission } from "/js/utils.js";
 import { loadTechnicians } from "/js/technicians.js";
 import { isAdmin } from "/js/authz.js";
 
 const absenceList = document.getElementById("absence-list");
-const selectTech = document.getElementById("absence-tech");
-const inputStart = document.getElementById("absence-start");
-const inputEnd = document.getElementById("absence-end");
-const inputReason = document.getElementById("absence-reason");
-const btnAdd = document.getElementById("btn-add-absence");
 
 let lastAbsDoc = null;
 let loadingAbs = false;
 
 const absCol = collection(db, "absences");
-const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
   const btnAddAbsence = document.getElementById("btn-add-absence");
@@ -22,10 +16,11 @@ export async function initAbsences() {
 
   // 🔐 Permissão SOMENTE para ação
   if (btnAddAbsence && !isAdmin(user)) {
-    btnAddAbsence.disabled = true;
+    btnAddAbsence.onclick = () => {
+      showNoPermission("Você não tem permissão para registrar ausências.");
+    };
   }
 
-  // ⚠️ NÃO interrompa a função
   if (btnAddAbsence && isAdmin(user)) {
     btnAddAbsence.addEventListener("click", handleAdd);
   }
@@ -33,15 +28,6 @@ export async function initAbsences() {
   // 👀 Lista SEMPRE carrega
   await loadAbsences();
 }
-
-if (!isAdmin(user)) {
-  btnAddAbsence.onclick = () => {
-    showNoPermission("Você não tem permissão para registrar ausências.");
-  };
-} else {
-  btnAddAbsence.addEventListener("click", handleAdd);
-}
-
 
 async function handleAdd() {
   const absenceTechSelect = document.getElementById("absence-tech");
@@ -107,12 +93,6 @@ async function handleAdd() {
   await loadTechnicians();
 }
 
-async function loadAbsencesRaw() {
-  const q = query(absCol, orderBy("start", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
 async function loadAbsences(reset = false) {
   if (loadingAbs) return;
   loadingAbs = true;
@@ -165,23 +145,22 @@ async function loadAbsences(reset = false) {
     <button class="btn-delete" title="Excluir ausência">🗑️</button>
   </div>
 `;
-
     
-    const btnDelete = div.querySelector(".btn-delete");
+        const btnDelete = div.querySelector(".btn-delete");
 
-    if (isAdmin(auth.currentUser)) {
-      btnDelete.onclick = async () => {
-        if (!confirm("Excluir ausência?")) return;
-    
-        await deleteDoc(doc(db, "absences", a.id));
-        await loadAbsences(true);
-        await loadTechnicians();
-      };
-    } else {
-      btnDelete.onclick = () => {
-        showNoPermission("Você não tem permissão para excluir ausências.");
-      };
-    }
+        if (isAdmin(auth.currentUser)) {
+          btnDelete.onclick = async () => {
+            if (!confirm("Excluir ausência?")) return;
+
+            await deleteDoc(doc(db, "absences", a.id));
+            await loadAbsences(true);
+            await loadTechnicians();
+          };
+        } else {
+          btnDelete.onclick = () => {
+            showNoPermission("Você não tem permissão para excluir ausências.");
+          };
+        }
         
     absenceList.appendChild(div);
   });

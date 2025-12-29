@@ -21,3 +21,107 @@
     margin-top: 12px;
   }
   
+  /* ===============================
+   MODAL – ACESSO NEGADO
+================================ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* Modal visível */
+.modal[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Caixa do modal */
+.modal-box {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  padding: 24px 26px;
+  animation: modalPop 0.25s ease;
+}
+
+/* Animação */
+@keyframes modalPop {
+  from {
+    transform: translateY(10px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Título */
+.modal-box h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #b00020; /* vermelho alerta */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Ícone antes do título */
+.modal-box h3::before {
+  content: "🔒";
+  font-size: 20px;
+}
+
+/* Corpo */
+.modal-box p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+/* Ações */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+/* Botão fechar */
+.modal-actions button {
+  background: #b00020;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.modal-actions button:hover {
+  background: #8c0019;
+}
+
+.modal-actions button:active {
+  transform: scale(0.97);
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .modal-box {
+    margin: 0 16px;
+  }
+}

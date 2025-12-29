@@ -16,17 +16,19 @@ export async function initTechnicians() {
   const btnAddTech = document.getElementById("btn-add-tech");
   const user = auth.currentUser;
 
-  if (!btnAddTech) return;
-
-  if (isAdmin(user)) {
-    btnAddTech.addEventListener("click", addTechnician);
-  } else {
-    btnAddTech.disabled = true;
+  if (btnAddTech && !isAdmin(user)) {
+    btnAddTech.onclick = () => {
+      showNoPermission("Você não tem permissão para incluir técnicos.");
+    };
   }
 
-  // 👀 lista sempre carrega
+  if (btnAddTech && isAdmin(user)) {
+    btnAddTech.addEventListener("click", addTechnician);
+  }
+
   await loadTechnicians();
 }
+
 
 
 async function addTechnician() {
@@ -116,14 +118,6 @@ async function loadTechnicians() {
           <button class="btn-delete">🗑️</button>
         </div>
       `;
-
-      if (!isAdmin(auth.currentUser)) {
-        btnAddTech.onclick = () => {
-          showNoPermission("Você não tem permissão para incluir técnicos.");
-        };
-      } else {
-        btnAddTech.addEventListener("click", handleAdd);
-      }
 
 
         // Excluir técnico (somente admin)
