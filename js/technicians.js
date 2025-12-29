@@ -13,16 +13,21 @@ const techsCol = collection(db, "technicians");
 const absCol = collection(db, "absences");
 
 export async function initTechnicians() {
+  const btnAddTech = document.getElementById("btn-add-tech");
   const user = auth.currentUser;
 
-  if (!isAdmin(user)) {
-    document.getElementById("btn-add-tech").disabled = true;
-    return;
+  if (!btnAddTech) return;
+
+  if (isAdmin(user)) {
+    btnAddTech.addEventListener("click", handleAddTech);
+  } else {
+    btnAddTech.disabled = true;
   }
 
-  btnAdd.addEventListener("click", addTechnician);
+  // 👀 lista sempre carrega
   await loadTechnicians();
 }
+
 
 async function addTechnician() {
   const name = nameInput.value.trim();
@@ -112,24 +117,32 @@ async function loadTechnicians() {
         </div>
       `;
 
-      // Excluir técnico
-      div.querySelector(".btn-delete").onclick = async () => {
-        if (!confirm("Excluir técnico?")) return;
+        // Excluir técnico (somente admin)
+        const btnDelete = div.querySelector(".btn-delete");
 
-        await deleteDoc(doc(db, "technicians", t.id));
+        if (isAdmin(auth.currentUser)) {
+          btnDelete.onclick = async () => {
+            if (!confirm("Excluir técnico?")) return;
 
-        // Reordenar técnicos > ordem removida
-        const allTechs = await loadTechniciansRaw();
-        const toUpdate = allTechs.filter(x => x.order > t.order);
+            await deleteDoc(doc(db, "technicians", t.id));
 
-        for (const tech of toUpdate) {
-          await updateDoc(doc(db, "technicians", tech.id), {
-            order: tech.order - 1
-          });
+            // Reordenar técnicos > ordem removida
+            const allTechs = await loadTechniciansRaw();
+            const toUpdate = allTechs.filter(x => x.order > t.order);
+
+            for (const tech of toUpdate) {
+              await updateDoc(doc(db, "technicians", tech.id), {
+                order: tech.order - 1
+              });
+            }
+
+            await loadTechnicians();
+          };
+        } else {
+          btnDelete.disabled = true;
+          btnDelete.title = "Sem permissão para excluir";
         }
 
-        await loadTechnicians();
-      };
 
       // Editar nome
       div.querySelector(".btn-edit").onclick = async () => {

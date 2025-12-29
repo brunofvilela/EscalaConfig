@@ -1,5 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
   getFirestore,
   collection,
@@ -16,12 +15,11 @@ import {
   startAfter,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 import {
   getAuth,
-  auth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   onAuthStateChanged,
   setPersistence,
@@ -40,16 +38,14 @@ const firebaseConfig = {
   measurementId: "G-160CC381TP"
 };
 
-// 🔥 INIT
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-// 🔐 AUTH
+const db = getFirestore(app);
 const auth = getAuth(app);
 await setPersistence(auth, browserLocalPersistence);
+
 const googleProvider = new GoogleAuthProvider();
 
-// 📦 EXPORTS
 export {
   // firestore
   db,
@@ -71,6 +67,7 @@ export {
   auth,
   googleProvider,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   onAuthStateChanged
 };

@@ -17,13 +17,20 @@ const absCol = collection(db, "absences");
 const techsCol = collection(db, "technicians");
 
 export async function initAbsences() {
+  const btnAddAbsence = document.getElementById("btn-add-absence");
   const user = auth.currentUser;
-  if (!isAdmin(user)) {
-    document.getElementById("btn-add-absence").disabled = true;
-    return;
+
+  // 🔐 Permissão SOMENTE para ação
+  if (btnAddAbsence && !isAdmin(user)) {
+    btnAddAbsence.disabled = true;
   }
 
-  btnAddAbsence.addEventListener("click", handleAdd);
+  // ⚠️ NÃO interrompa a função
+  if (btnAddAbsence && isAdmin(user)) {
+    btnAddAbsence.addEventListener("click", handleAdd);
+  }
+
+  // 👀 Lista SEMPRE carrega
   await loadAbsences();
 }
 
@@ -128,7 +135,7 @@ async function loadAbsences(reset = false) {
   }
 
   snap.docs.forEach(d => {
-    const a = d.data();
+    const a = { id: d.id, ...d.data() };
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
@@ -144,13 +151,20 @@ async function loadAbsences(reset = false) {
       </div>
     `;
     
-    div.querySelector(".btn-delete").onclick = async () => {
-      if (!confirm("Excluir ausência?")) return;
-      await deleteDoc(doc(db, "absences", d.id));
-      await loadTechnicians();
-      await loadAbsences(true);
-    };    
+    const btnDelete = div.querySelector(".btn-delete");
 
+    if (isAdmin(auth.currentUser)) {
+      btnDelete.onclick = async () => {
+        if (!confirm("Excluir ausência?")) return;
+    
+        await deleteDoc(doc(db, "absences", a.id));
+        await loadAbsences();
+      };
+    } else {
+      btnDelete.disabled = true;
+      btnDelete.title = "Sem permissão para excluir";
+    }
+        
     absenceList.appendChild(div);
   });
 
