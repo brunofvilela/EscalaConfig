@@ -34,6 +34,15 @@ export async function initAbsences() {
   await loadAbsences();
 }
 
+if (!isAdmin(user)) {
+  btnAddAbsence.onclick = () => {
+    showNoPermission("Você não tem permissão para registrar ausências.");
+  };
+} else {
+  btnAddAbsence.addEventListener("click", handleAdd);
+}
+
+
 async function handleAdd() {
   const absenceTechSelect = document.getElementById("absence-tech");
   const absenceStartInput = document.getElementById("absence-start");
@@ -139,17 +148,24 @@ async function loadAbsences(reset = false) {
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
-      <div class="left">
-        <strong>${escapeHtml(a.technicianName)}</strong>
-        <span class="meta">
-          ${a.start} → ${a.end}
-          ${a.reason ? `— ${escapeHtml(a.reason)}` : ""}
-        </span>
-      </div>
-      <div class="actions">
-        <button class="btn-delete" title="Excluir ausência">🗑️</button>
-      </div>
-    `;
+  <div class="left">
+    <strong>${escapeHtml(a.technicianName)}</strong>
+
+    <span class="meta">
+      ${a.start} → ${a.end}
+      ${a.reason ? `— ${escapeHtml(a.reason)}` : ""}
+      <br>
+      <small class="created-by">
+        Adicionado por: ${escapeHtml(a.createdBy?.name ?? "—")}
+      </small>
+    </span>
+  </div>
+
+  <div class="actions">
+    <button class="btn-delete" title="Excluir ausência">🗑️</button>
+  </div>
+`;
+
     
     const btnDelete = div.querySelector(".btn-delete");
 
@@ -158,44 +174,17 @@ async function loadAbsences(reset = false) {
         if (!confirm("Excluir ausência?")) return;
     
         await deleteDoc(doc(db, "absences", a.id));
-        await loadAbsences();
+        await loadAbsences(true);
+        await loadTechnicians();
       };
     } else {
-      btnDelete.disabled = true;
-      btnDelete.title = "Sem permissão para excluir";
+      btnDelete.onclick = () => {
+        showNoPermission("Você não tem permissão para excluir ausências.");
+      };
     }
         
     absenceList.appendChild(div);
   });
 
   loadingAbs = false;
-}
-
-
-async function addAbsence() {
-  const techId = selectTech.value;
-  const start = inputStart.value;
-  const end = inputEnd.value;
-  const reason = inputReason.value.trim();
-
-  if (!techId || !start || !end) return alert("Preencha os campos obrigatórios.");
-
-  const techSnap = await getDocs(techsCol);
-  const tech = techSnap.docs.map(d => ({ id: d.id, ...d.data() })).find(t => t.id === techId);
-
-  await addDoc(absCol, {
-    technicianId: techId,
-    tech: tech?.name ?? "",
-    start,
-    end,
-    reason,
-    createdAt: new Date().toISOString()
-  });
-  
-  inputStart.value = "";
-  inputEnd.value = "";
-  inputReason.value = "";
-  
-  await loadAbsences(true);
-  await loadTechnicians();  // ATUALIZA STATUS NA HORA  
 }

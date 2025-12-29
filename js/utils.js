@@ -54,3 +54,25 @@ export function todayISO() {
   const d = new Date();
   return d.toISOString().slice(0, 10);
 }
+
+export function showNoPermission(message = "Você não tem permissão para esta ação.") {
+  const modal = document.getElementById("modal-edit");
+  const title = document.getElementById("modal-title");
+  const body = document.getElementById("modal-body");
+  const btnSave = document.getElementById("modal-save");
+  const btnCancel = document.getElementById("modal-cancel");
+
+  title.textContent = "Acesso negado";
+  body.innerHTML = `<p>${message}</p>`;
+
+  btnSave.style.display = "none";
+  btnCancel.textContent = "Fechar";
+
+  modal.setAttribute("aria-hidden", "false");
+
+  btnCancel.onclick = () => {
+    modal.setAttribute("aria-hidden", "true");
+    btnSave.style.display = "";
+    btnCancel.textContent = "Cancelar";
+  };
+}

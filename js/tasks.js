@@ -66,7 +66,12 @@ async function loadTasks(reset = false) {
     div.innerHTML = `
       <div class="left">
         <strong>${escapeHtml(t.activity)}</strong>
-        <span class="meta">${t.technicianName} — ${t.displayTS}</span>
+            <span class="meta">
+            ${t.technicianName} — ${t.displayTS}<br>
+            <small class="created-by">
+              Adicionado por: ${escapeHtml(t.createdBy?.name ?? "—")}
+            </small>
+          </span>
       </div>
       <div class="actions">
         <button class="btn-delete" title="Excluir tarefa">🗑️</button>

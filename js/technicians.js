@@ -1,7 +1,7 @@
 import { 
   auth , db, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy 
 } from "/js/firebase.js";
-import { escapeHtml } from "/js/utils.js";
+import { escapeHtml, showNoPermission } from "/js/utils.js";
 import { isAdmin } from "/js/authz.js";
 
 const techList = document.getElementById("technician-list");
@@ -19,7 +19,7 @@ export async function initTechnicians() {
   if (!btnAddTech) return;
 
   if (isAdmin(user)) {
-    btnAddTech.addEventListener("click", handleAddTech);
+    btnAddTech.addEventListener("click", addTechnician);
   } else {
     btnAddTech.disabled = true;
   }
@@ -117,6 +117,15 @@ async function loadTechnicians() {
         </div>
       `;
 
+      if (!isAdmin(auth.currentUser)) {
+        btnAddTech.onclick = () => {
+          showNoPermission("Você não tem permissão para incluir técnicos.");
+        };
+      } else {
+        btnAddTech.addEventListener("click", handleAdd);
+      }
+
+
         // Excluir técnico (somente admin)
         const btnDelete = div.querySelector(".btn-delete");
 
@@ -139,8 +148,9 @@ async function loadTechnicians() {
             await loadTechnicians();
           };
         } else {
-          btnDelete.disabled = true;
-          btnDelete.title = "Sem permissão para excluir";
+          btnDelete.onclick = () => {
+            showNoPermission("Você não tem permissão para excluir técnicos.");
+          };
         }
 
 
