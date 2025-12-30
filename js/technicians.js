@@ -18,7 +18,7 @@ export async function initTechnicians() {
 
   if (btnAddTech && !isAdmin(user)) {
     btnAddTech.onclick = () => {
-      showNoPermission("Você não tem permissão para incluir técnicos.");
+      showNoPermission("Você não tem permissão para incluir técnicos. Apenas usuários de coordenadores.");
     };
   }
 
@@ -143,7 +143,7 @@ async function loadTechnicians() {
           };
         } else {
           btnDelete.onclick = () => {
-            showNoPermission("Você não tem permissão para excluir técnicos.");
+            showNoPermission("Você não tem permissão para excluir técnicos. Apenas usuários de coordenadores.");
           };
         }
 

@@ -9,3 +9,8 @@ export const ADMIN_EMAILS = [
     return user && ADMIN_EMAILS.includes(user.email);
   }
   
+  export function isSyonetUser(user) {
+    if (!user || !user.email) return false;
+    return user.email.toLowerCase().endsWith("@syonet.com");
+  }
+  

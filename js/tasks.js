@@ -1,5 +1,6 @@
 import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc, setDoc, auth } from "/js/firebase.js";
-import { escapeHtml } from "/js/utils.js";
+import { escapeHtml,showNoPermission } from "/js/utils.js";
+import { isSyonetUser } from "/js/authz.js";
 
 let lastTaskDoc = null;
 let loadingTasks = false;
@@ -14,17 +15,43 @@ const metaDocRef = doc(db, "meta", "rotation");
 
 export async function initTasks() {
   const btnAddTask = document.getElementById("btn-add-task");
-  const btnLoadMore = document.getElementById("btn-load-more-tasks");
+  const user = auth.currentUser;
 
-  if (!btnAddTask || !btnLoadMore) {
-    console.warn("⚠️ Botões de tarefa não encontrados");
+  if (!btnAddTask) return;
+
+  if (!isSyonetUser(user)) {
+    btnAddTask.onclick = () => {
+      showNoPermission(
+        "Você não tem permissão para incluir tarefas. Apenas usuários @syonet.com."
+      );
+    };
+  } else {
+    btnAddTask.onclick = addTask;
+  }  
+
+  await loadTasks();
+}
+
+async function deleteTask(taskId, technicianId) {
+  const user = auth.currentUser;
+
+  if (!isSyonetUser(user)) {
+    showNoPermission(
+      "Você não tem permissão para excluir tarefas."
+    );
     return;
   }
 
-  btnAddTask.addEventListener("click", addTask);
-  btnLoadMore.addEventListener("click", () => loadTasks());
+  if (!confirm("Excluir tarefa?")) return;
 
-  // primeira carga
+  await deleteDoc(doc(db, "tasks", taskId));
+
+  await setDoc(
+    doc(db, "meta", "rotation"),
+    { forceNextTechnicianId: technicianId },
+    { merge: true }
+  );
+
   await loadTasks(true);
 }
 
@@ -37,11 +64,7 @@ async function loadTasks(reset = false) {
     lastTaskDoc = null;
   }
 
-  let q = query(
-    tasksCol,
-    orderBy("timestamp", "desc"),
-    limit(20)
-  );
+  let q = query(tasksCol, orderBy("timestamp", "desc"), limit(20));
 
   if (lastTaskDoc) {
     q = query(
@@ -62,49 +85,41 @@ async function loadTasks(reset = false) {
     const t = d.data();
     const div = document.createElement("div");
     div.className = "item";
-  
+
     div.innerHTML = `
       <div class="left">
         <strong>${escapeHtml(t.activity)}</strong>
-            <span class="meta">
-            ${t.technicianName} — ${t.displayTS}<br>
-            <small class="created-by">
-              Adicionado por: ${escapeHtml(t.createdBy?.name ?? "—")}
-            </small>
-          </span>
+        <span class="meta">
+          ${t.technicianName} — ${t.displayTS}<br>
+          <small class="created-by">
+            Adicionado por: ${escapeHtml(t.createdBy?.name ?? "—")}
+          </small>
+        </span>
       </div>
       <div class="actions">
         <button class="btn-delete" title="Excluir tarefa">🗑️</button>
       </div>
     `;
-  
-    div.querySelector(".btn-delete").onclick = async () => {
-      if (!confirm("Excluir tarefa?")) return;
-    
-      // 🔑 técnico da tarefa excluída
-      const removedTechnicianId = t.technicianId;
-    
-      // remove a tarefa
-      await deleteDoc(doc(db, "tasks", d.id));
-    
-      // 🔁 "volta" a rotação para esse técnico
-      await setDoc(
-        doc(db, "meta", "rotation"),
-        { forceNextTechnicianId: removedTechnicianId },
-        { merge: true }
-      );      
-    
-      await loadTasks(true);
-    };    
-  
+
+    const btnDelete = div.querySelector(".btn-delete");
+    btnDelete.onclick = () => deleteTask(d.id, t.technicianId);
+
     taskList.appendChild(div);
-  });  
+  });
 
   loadingTasks = false;
 }
 
-
 async function addTask() {
+  const user = auth.currentUser;
+
+  if (!isSyonetUser(user)) {
+    showNoPermission(
+      "Você não tem permissão para incluir tarefas."
+    );
+    return;
+  }
+
   const activity = inputActivity.value.trim();
   if (!activity) return alert("Digite a atividade.");
 
@@ -183,7 +198,6 @@ async function addTask() {
   });
 
   const now = new Date();
-  const user = auth.currentUser;
   if (!user) return alert("Usuário não autenticado.");
   
   await addDoc(tasksCol, {

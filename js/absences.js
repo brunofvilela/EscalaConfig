@@ -17,7 +17,7 @@ export async function initAbsences() {
   // 🔐 Permissão SOMENTE para ação
   if (btnAddAbsence && !isAdmin(user)) {
     btnAddAbsence.onclick = () => {
-      showNoPermission("Você não tem permissão para registrar ausências.");
+      showNoPermission("Você não tem permissão para registrar ausências. Apenas usuários de coordenadores.");
     };
   }
 
@@ -158,7 +158,7 @@ async function loadAbsences(reset = false) {
           };
         } else {
           btnDelete.onclick = () => {
-            showNoPermission("Você não tem permissão para excluir ausências.");
+            showNoPermission("Você não tem permissão para excluir ausências. Apenas usuários de coordenadores.");
           };
         }
         
