@@ -37,7 +37,7 @@ async function deleteTask(taskId, technicianId) {
 
   if (!isSyonetUser(user)) {
     showNoPermission(
-      "Você não tem permissão para excluir tarefas."
+      "Você não tem permissão para excluir tarefas. Apenas usuários @syonet.com."
     );
     return;
   }
@@ -115,7 +115,7 @@ async function addTask() {
 
   if (!isSyonetUser(user)) {
     showNoPermission(
-      "Você não tem permissão para incluir tarefas."
+      "Você não tem permissão para incluir tarefas. Apenas usuários @syonet.com."
     );
     return;
   }
