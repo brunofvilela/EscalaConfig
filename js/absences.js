@@ -105,7 +105,7 @@ async function loadAbsences(reset = false) {
   let q = query(
     absCol,
     orderBy("start", "desc"),
-    limit(20)
+    limit(10)
   );
 
   if (lastAbsDoc) {
@@ -113,7 +113,7 @@ async function loadAbsences(reset = false) {
       absCol,
       orderBy("start", "desc"),
       startAfter(lastAbsDoc),
-      limit(20)
+      limit(10)
     );
   }
 

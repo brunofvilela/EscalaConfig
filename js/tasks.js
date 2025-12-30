@@ -64,14 +64,14 @@ async function loadTasks(reset = false) {
     lastTaskDoc = null;
   }
 
-  let q = query(tasksCol, orderBy("timestamp", "desc"), limit(20));
+  let q = query(tasksCol, orderBy("timestamp", "desc"), limit(10));
 
   if (lastTaskDoc) {
     q = query(
       tasksCol,
       orderBy("timestamp", "desc"),
       startAfter(lastTaskDoc),
-      limit(20)
+      limit(10)
     );
   }
 
