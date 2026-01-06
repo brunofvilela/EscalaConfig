@@ -20,11 +20,4 @@ Você pode visualizar o projeto hospedado no link abaixo:
 
 ## 🖱️ Antes e depois:
 
-Tarefas: 
-![Demo](./images/tarefas_antes.png)
-![Demo](./images/tarefas_depois.png)
-
-Técnicos + Ausencias
-![Demo](./images/tecnicos_ausencias_antes.png)
-![Demo](./images/ausencias_depois.png)
-![Demo](./images/tecnicos_depois.png)
+- [Slide](https://www.canva.com/design/DAG9qQTf_u8/86HuEkygdyDuwJfGfJ7n6A/edit?utm_content=DAG9qQTf_u8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
