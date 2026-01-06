@@ -1,37 +1,138 @@
-import { db, collection, addDoc, doc, getDocs, query, orderBy, limit, startAfter, runTransaction, deleteDoc, setDoc, auth } from "/js/firebase.js";
-import { escapeHtml,showNoPermission } from "/js/utils.js";
-import { isSyonetUser } from "/js/authz.js";
+import {
+  db,
+  collection,
+  addDoc,
+  doc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  runTransaction,
+  deleteDoc,
+  setDoc,
+  auth,
+  onSnapshot
+} from "/js/firebase.js";
 
-let lastTaskDoc = null;
-let loadingTasks = false;
+import { escapeHtml, showNoPermission } from "/js/utils.js";
+import { isSyonetUser } from "/js/authz.js";
 
 const taskList = document.getElementById("task-list");
 const inputActivity = document.getElementById("task-activity");
+const btnLoadMore = document.getElementById("btn-load-more-tasks");
 
 const tasksCol = collection(db, "tasks");
 const techsCol = collection(db, "technicians");
 const absCol = collection(db, "absences");
 const metaDocRef = doc(db, "meta", "rotation");
 
-export async function initTasks() {
+let lastVisible = null;
+let unsubscribeRealtime = null;
+
+/* =========================
+   INIT
+========================= */
+export function initTasks() {
   const btnAddTask = document.getElementById("btn-add-task");
   const user = auth.currentUser;
 
-  if (!btnAddTask) return;
+  if (btnAddTask) {
+    btnAddTask.onclick = isSyonetUser(user)
+      ? addTask
+      : () =>
+          showNoPermission(
+            "Você não tem permissão para incluir tarefas. Apenas usuários @syonet.com."
+          );
+  }
 
-  if (!isSyonetUser(user)) {
-    btnAddTask.onclick = () => {
-      showNoPermission(
-        "Você não tem permissão para incluir tarefas. Apenas usuários @syonet.com."
-      );
-    };
-  } else {
-    btnAddTask.onclick = addTask;
-  }  
+  if (btnLoadMore) {
+    btnLoadMore.onclick = loadMoreTasks;
+  }
 
-  await loadTasks();
+  listenRecentTasks();
 }
 
+/* =========================
+   REALTIME (RECENTES)
+========================= */
+function listenRecentTasks() {
+  if (unsubscribeRealtime) unsubscribeRealtime();
+
+  const q = query(
+    tasksCol,
+    orderBy("timestamp", "desc"),
+    limit(20)
+  );
+
+  unsubscribeRealtime = onSnapshot(q, snap => {
+    taskList.innerHTML = "";
+
+    if (!snap.empty) {
+      lastVisible = snap.docs[snap.docs.length - 1];
+    }
+
+    snap.docs.forEach(renderTask);
+  });
+}
+
+/* =========================
+   LOAD MORE (PAGINAÇÃO)
+========================= */
+async function loadMoreTasks() {
+  if (!lastVisible) return;
+
+  const q = query(
+    tasksCol,
+    orderBy("timestamp", "desc"),
+    startAfter(lastVisible),
+    limit(20)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    btnLoadMore.disabled = true;
+    btnLoadMore.textContent = "Não há mais tarefas";
+    return;
+  }
+
+  lastVisible = snap.docs[snap.docs.length - 1];
+  snap.docs.forEach(renderTask);
+}
+
+/* =========================
+   RENDER
+========================= */
+function renderTask(d) {
+  const t = d.data();
+  const div = document.createElement("div");
+  div.className = "item";
+
+  div.innerHTML = `
+    <div class="left">
+      <strong>${escapeHtml(t.activity)}</strong>
+      <span class="meta">
+        ${t.technicianName} — ${t.displayTS}<br>
+        <small class="created-by">
+          Adicionado por: ${escapeHtml(t.createdBy?.name ?? "—")}
+        </small>
+      </span>
+    </div>
+    <div class="actions">
+      <button class="btn-delete" title="Excluir tarefa">🗑️</button>
+    </div>
+  `;
+
+  const btnDelete = div.querySelector(".btn-delete");
+  btnDelete.onclick = () => deleteTask(d.id, t.technicianId);
+
+  taskList.appendChild(div);
+}
+
+/* =========================
+   DELETE TASK
+========================= */
 async function deleteTask(taskId, technicianId) {
   const user = auth.currentUser;
 
@@ -46,70 +147,17 @@ async function deleteTask(taskId, technicianId) {
 
   await deleteDoc(doc(db, "tasks", taskId));
 
+  // 🔑 apenas registra quem foi o último técnico
   await setDoc(
-    doc(db, "meta", "rotation"),
-    { forceNextTechnicianId: technicianId },
+    metaDocRef,
+    { preferredTechnicianId: technicianId },
     { merge: true }
   );
-
-  await loadTasks(true);
 }
 
-async function loadTasks(reset = false) {
-  if (loadingTasks) return;
-  loadingTasks = true;
-
-  if (reset) {
-    taskList.innerHTML = "";
-    lastTaskDoc = null;
-  }
-
-  let q = query(tasksCol, orderBy("timestamp", "desc"), limit(10));
-
-  if (lastTaskDoc) {
-    q = query(
-      tasksCol,
-      orderBy("timestamp", "desc"),
-      startAfter(lastTaskDoc),
-      limit(10)
-    );
-  }
-
-  const snap = await getDocs(q);
-
-  if (!snap.empty) {
-    lastTaskDoc = snap.docs[snap.docs.length - 1];
-  }
-
-  snap.docs.forEach(d => {
-    const t = d.data();
-    const div = document.createElement("div");
-    div.className = "item";
-
-    div.innerHTML = `
-      <div class="left">
-        <strong>${escapeHtml(t.activity)}</strong>
-        <span class="meta">
-          ${t.technicianName} — ${t.displayTS}<br>
-          <small class="created-by">
-            Adicionado por: ${escapeHtml(t.createdBy?.name ?? "—")}
-          </small>
-        </span>
-      </div>
-      <div class="actions">
-        <button class="btn-delete" title="Excluir tarefa">🗑️</button>
-      </div>
-    `;
-
-    const btnDelete = div.querySelector(".btn-delete");
-    btnDelete.onclick = () => deleteTask(d.id, t.technicianId);
-
-    taskList.appendChild(div);
-  });
-
-  loadingTasks = false;
-}
-
+/* =========================
+   ADD TASK (ROTAÇÃO CORRETA)
+========================= */
 async function addTask() {
   const user = auth.currentUser;
 
@@ -123,90 +171,88 @@ async function addTask() {
   const activity = inputActivity.value.trim();
   if (!activity) return alert("Digite a atividade.");
 
-  // carregar técnicos
   const techSnap = await getDocs(techsCol);
   const techs = techSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  // carregar ausências
   const absSnap = await getDocs(absCol);
   const absences = absSnap.docs.map(d => d.data());
 
   const hoje = new Date().toISOString().slice(0, 10);
 
-  // técnicos ATIVOS ordenados
   const active = techs
     .filter(t =>
-      !absences.some(a =>
-        a.technicianId === t.id &&
-        a.start <= hoje &&
-        a.end >= hoje
+      !absences.some(
+        a =>
+          a.technicianId === t.id &&
+          a.start <= hoje &&
+          a.end >= hoje
       )
     )
     .sort((a, b) => a.order - b.order);
 
-  if (active.length === 0) {
-    return alert("Nenhum técnico ATIVO disponível.");
+  if (!active.length) {
+    alert("Nenhum técnico ATIVO disponível.");
+    return;
   }
 
-  // 🔁 ROTATION ROBUSTA (por ID, não por índice)
-  const chosen = await runTransaction(db, async (tx) => {
+  const chosen = await runTransaction(db, async tx => {
     const snap = await tx.get(metaDocRef);
     const data = snap.exists() ? snap.data() : {};
-    const forceId = data.forceNextTechnicianId || null;
-    const lastId = data.lastTechnicianId || null;
+    const preferredId = data.preferredTechnicianId || null;
+const lastId = data.lastTechnicianId || null;
 
-    let nextTech;
+let next;
 
-    if (forceId) {
-      nextTech = active.find(t => t.id === forceId);
-    
-      // se técnico está ausente ou não existe mais
-      if (!nextTech) {
-        nextTech = active[0];
-      }
-    
-      // consome o override
-      tx.set(
-        metaDocRef,
-        {
-          lastTechnicianId: nextTech.id,
-          forceNextTechnicianId: null
-        },
-        { merge: true }
-      );
-    
-      return nextTech;
-    }if (!lastId) {
-      nextTech = active[0];
-    } else {
-      const idx = active.findIndex(t => t.id === lastId);
-    
-      if (idx !== -1) {
-        nextTech = active[(idx + 1) % active.length];
-      } else {
-        const lastTech = techs.find(t => t.id === lastId);
-        const nextByOrder = lastTech
-          ? active.find(t => t.order > lastTech.order)
-          : null;
-        nextTech = nextByOrder ?? active[0];
-      }
-    }
-    
-    tx.set(metaDocRef, { lastTechnicianId: nextTech.id }, { merge: true });
-    return nextTech;
-    
+// 🔁 prioridade: repetir técnico excluído (se ainda ativo)
+if (preferredId) {
+  const preferred = active.find(t => t.id === preferredId);
+
+  if (preferred) {
+    next = preferred;
+
+    tx.set(
+      metaDocRef,
+      {
+        lastTechnicianId: preferred.id,
+        preferredTechnicianId: null
+      },
+      { merge: true }
+    );
+
+    return next;
+  }
+}
+
+// 🔄 fallback: rotação normal por ordem
+if (!lastId) {
+  next = active[0];
+} else {
+  const lastOrder =
+    techs.find(t => t.id === lastId)?.order ?? -1;
+
+  const nextByOrder = active.find(t => t.order > lastOrder);
+  next = nextByOrder ?? active[0];
+}
+
+tx.set(
+  metaDocRef,
+  { lastTechnicianId: next.id },
+  { merge: true }
+);
+
+return next;
+
+
+    tx.set(metaDocRef, { lastTechnicianId: next.id }, { merge: true });
+    return next;
   });
 
-  const now = new Date();
-  if (!user) return alert("Usuário não autenticado.");
-  
   await addDoc(tasksCol, {
     activity,
     technicianId: chosen.id,
     technicianName: chosen.name,
-    timestamp: now.toISOString(),
-    displayTS: now.toLocaleString(),
-  
+    timestamp: new Date().toISOString(),
+    displayTS: new Date().toLocaleString(),
     createdBy: {
       uid: user.uid,
       email: user.email,
@@ -214,8 +260,6 @@ async function addTask() {
     },
     createdAt: new Date().toISOString()
   });
-  
 
   inputActivity.value = "";
-  await loadTasks(true);
 }

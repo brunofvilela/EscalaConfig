@@ -13,7 +13,8 @@ import {
   getDoc,
   setDoc,
   startAfter,
-  runTransaction
+  runTransaction,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth,
@@ -62,6 +63,7 @@ export {
   setDoc,
   startAfter,
   runTransaction,
+  onSnapshot,
 
   // auth
   auth,

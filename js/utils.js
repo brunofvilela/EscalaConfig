@@ -1,3 +1,6 @@
+import { auth } from "/js/firebase.js";
+import { isAdmin } from "/js/authz.js";
+
 /* ===========================
    TABS (Técnicos / Tarefas / Ausências)
 =========================== */
@@ -7,6 +10,8 @@ export function initTabs(defaultTabId = null) {
 
   // página sem tabs (ex: login)
   if (!buttons.length || !tabs.length) return;
+
+  const restrictedTabs = ["tab-tecnicos", "tab-ausencias"];
 
   function activate(tabId) {
     buttons.forEach(b => b.classList.remove("active"));
@@ -21,7 +26,18 @@ export function initTabs(defaultTabId = null) {
 
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
-      activate(btn.dataset.tab);
+      const tabId = btn.dataset.tab;
+      const user = auth.currentUser;
+
+      // 🔐 BLOQUEIO PARA NÃO-ADMINS
+      if (restrictedTabs.includes(tabId) && !isAdmin(user)) {
+        showNoPermission(
+          "Você não tem permissão para acessar esta área. Apenas coordenadores."
+        );
+        return;
+      }
+
+      activate(tabId);
     });
   });
 
@@ -31,7 +47,13 @@ export function initTabs(defaultTabId = null) {
     document.querySelector(".tabBtn.active")?.dataset.tab ||
     buttons[0].dataset.tab;
 
-  activate(firstTab);
+  // garante que a aba inicial também respeite permissão
+  const user = auth.currentUser;
+  if (restrictedTabs.includes(firstTab) && !isAdmin(user)) {
+    activate("tab-tarefas");
+  } else {
+    activate(firstTab);
+  }
 }
 
 /* ===========================
