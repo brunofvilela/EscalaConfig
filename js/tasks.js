@@ -62,7 +62,7 @@ function listenRecentTasks() {
   const q = query(
     tasksCol,
     orderBy("timestamp", "desc"),
-    limit(20)
+    limit(10)
   );
 
   unsubscribeRealtime = onSnapshot(q, snap => {
@@ -86,7 +86,7 @@ async function loadMoreTasks() {
     tasksCol,
     orderBy("timestamp", "desc"),
     startAfter(lastVisible),
-    limit(20)
+    limit(10)
   );
 
   const snap = await getDocs(q);
